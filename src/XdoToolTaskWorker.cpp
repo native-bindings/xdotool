@@ -1,12 +1,12 @@
 #include "XdoToolTaskWorker.h"
 
-XdoToolTaskWorker::XdoToolTaskWorker(Nan::Callback* callback, XdoToolTask* task): Nan::AsyncWorker(callback), task(task) {
+XdoToolTaskWorker::XdoToolTaskWorker(Nan::Callback* callback, XTask* task): Nan::AsyncWorker(callback), task(task) {
 }
 
 void XdoToolTaskWorker::Execute() {
-    XLockDisplay(task->GetXdo()->xdpy);
+    XLockDisplay(task->GetDisplay());
     task->Execute();
-    XUnlockDisplay(task->GetXdo()->xdpy);
+    XUnlockDisplay(task->GetDisplay());
 }
 
 void XdoToolTaskWorker::HandleOKCallback() {

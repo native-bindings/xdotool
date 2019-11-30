@@ -1,33 +1,31 @@
 #ifndef NODE_XDOTOOL_XDOTOOL_H_
 #define NODE_XDOTOOL_XDOTOOL_H_
 
-#include "xdo_c.h"
+#include "XService.h"
 
 using v8::Object;
-using v8::Value;
 using v8::Local;
+using Nan::Persistent;
+using v8::Function;
 
-class XdoTool : public Nan::ObjectWrap {
+class XdoTool : public XService {
 public:
     XdoTool(xdo_t* xdo);
     ~XdoTool();
     static void Init(Local<Object> exports);
+    xdo_t* GetXdo() {return xdo;}
+    static Persistent<Function> constructor;
 private:
     xdo_t* xdo;
     static NAN_METHOD(Constructor);
-    /**
-     * @returns true if string was found and allocated, false otherwise
-     */
-    static bool GetString(Local<Object>, const char*, char**);
-    static bool GetInt32(Local<Object>, const char*, int32_t*);
-    static bool GetBool(Local<Object>, const char*, bool*);
-    static bool GetString(Local<Value> obj, char** out);
     static NAN_METHOD(SearchWindows);
     static NAN_METHOD(GetWindowPID);
     static NAN_METHOD(GetMouseLocation);
     static NAN_METHOD(GetViewportDimensions);
     static NAN_METHOD(MoveMouse);
     static NAN_METHOD(ActivateWindow);
+    static NAN_METHOD(QueryKeymap);
+    static NAN_METHOD(GetImage);
     static NAN_METHOD(WindowHasProperty);
 };
 

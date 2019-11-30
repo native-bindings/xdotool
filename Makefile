@@ -3,7 +3,6 @@
 NAN_INCLUDE_DIRECTORY := node_modules/nan
 
 configure:
-	([ -e compile_commands.json ] && unlink compile_commands.json) && \
 	mkdir -pv build/cmake-vscode-debug && \
 	cd build/cmake-vscode-debug && \
 	cmake \
@@ -14,6 +13,9 @@ configure:
 
 create_compile_commands_link: configure
 	ln -sv build/cmake-vscode-debug/compile_commands.json compile_commands.json
+
+test:
+	npx sarg --require ts-node/register test/test.ts
 
 release:
 	npx tsc

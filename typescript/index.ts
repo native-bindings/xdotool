@@ -54,6 +54,10 @@ export interface IMoveMouseOptions {
     screen_num?: number;
 }
 
+export interface IGetImageOptions {
+    window?: XWindow;
+}
+
 export interface XdoTool {
     getMouseLocation: (
         callback: XdoCallback<IMouseLocation>
@@ -96,13 +100,31 @@ export interface IXdoViewportDimensions {
     height: number;
 }
 
+export interface XScreenshooter {
+    getImage: (callback: XdoCallback<ArrayBuffer>) => void;
+}
+
 export interface IXdoTool {
     XdoTool: {
         new(): XdoTool;
     };
+    Screenshooter: {
+        new(xdo: XdoTool, window?: XWindow): XScreenshooter;
+    };
+    Keyboard: {
+        new(xdo: XdoTool): XKeyboard;
+    };
 }
 
-const {XdoTool} = bindings<IXdoTool>({
+export interface XKeyboard {
+    queryKeymap: (
+        callback: XdoCallback<ArrayBuffer>
+    ) => void;
+    keycodeToKeysym: (keycode: number) => number;
+    keysymToString: (keysym: number) => string;
+}
+
+const {XdoTool, Screenshooter, Keyboard} = bindings<IXdoTool>({
     try: [
         ['module_root', 'build','cmake-js', 'Release', 'bindings']
     ],
@@ -113,11 +135,61 @@ export type XWindow = string;
 
 export { XdoTool as XdoToolBindings };
 
-export default class XdoToolAsync {
-    public constructor(private readonly xdo: XdoTool) {
+export abstract class AsyncWrapper {
+    protected resolveOrReject<T>(resolve: (result: T) => void, reject: (error: Error) => void) {
+        return (err: Error | undefined, result: T) => {
+            if(typeof err !== 'undefined') {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        };
+    }
+}
 
+export class KeyboardAsync extends AsyncWrapper {
+    private readonly keyboard: XKeyboard;
+    public constructor(xdo: XdoTool) {
+        super();
+        this.keyboard = new Keyboard(xdo);
     }
 
+    public keycodeToKeysym(keycode: number) {
+        return this.keyboard.keycodeToKeysym(keycode);
+    }
+
+    public keysymToString(keysym: number) {
+        return this.keyboard.keysymToString(keysym);
+    }
+
+    public queryKeymap(): Promise<ArrayBuffer> {
+        return new Promise<ArrayBuffer>((resolve, reject) => (
+            this.keyboard.queryKeymap(
+                this.resolveOrReject(resolve, reject)
+            )
+        ));
+    }
+}
+
+export class ScreenshooterAsync extends AsyncWrapper {
+    private readonly ss: XScreenshooter;
+    public constructor(xdo: XdoTool, window?: XWindow) {
+        super();
+        this.ss = new Screenshooter(xdo, window);
+    }
+    public getImage(): Promise<ArrayBuffer> {
+        return new Promise<ArrayBuffer>((resolve, reject) => (
+            this.ss.getImage(
+                this.resolveOrReject(resolve, reject)
+            )
+        ));
+    }
+}
+
+export default class XdoToolAsync extends AsyncWrapper {
+    public constructor(private readonly xdo: XdoTool) {
+        super();
+    }
     public windowHasProperty(window: XWindow, property: string): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => (
             this.xdo.windowHasProperty(
@@ -171,14 +243,5 @@ export default class XdoToolAsync {
                 this.resolveOrReject<string[]>(resolve, reject)
             )
         ));
-    }
-    private resolveOrReject<T>(resolve: (result: T) => void, reject: (error: Error) => void) {
-        return (err: Error | undefined, result: T) => {
-            if(typeof err !== 'undefined') {
-                reject(err);
-            } else {
-                resolve(result);
-            }
-        };
     }
 }

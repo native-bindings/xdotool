@@ -3,20 +3,16 @@
 
 #include "ResourceManager.h"
 #include "xdo_c.h"
+#include "XTask.h"
 
 #include <iostream>
 
 using v8::Local;
 using v8::Value;
 
-struct XdoToolTask : public ResourceManager {
+struct XdoToolTask : public XTask {
 public:
-    const char* failure;
-    XdoToolTask(xdo_t* xdo);
-    virtual ~XdoToolTask() {}
-    void SetFailure(const char* failure);
-    virtual void Execute() = 0;
-    virtual Local<Value> GetResult() = 0;
+    XdoToolTask(xdo_t*);
     xdo_t* GetXdo();
 protected:
     xdo_t* xdo;
