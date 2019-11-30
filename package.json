@@ -1,6 +1,6 @@
 {
   "name": "xdotool",
-  "version": "1.0.9",
+  "version": "1.0.21",
   "description": "C++ bindings for Node.js to handle X11 using the full power of libxdo.",
   "main": "./dist/lib/index.js",
   "typings": "./dist/lib/index.d.ts",
