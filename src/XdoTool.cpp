@@ -2,6 +2,7 @@
 #include "tasks/SearchWindows.h"
 #include "tasks/GetMouseLocation.h"
 #include "tasks/GetViewportDimensions.h"
+#include "tasks/SendKeysequence.h"
 #include "tasks/GetWindowPID.h"
 #include "tasks/MoveMouse.h"
 #include "tasks/ActivateWindow.h"
@@ -47,6 +48,20 @@ NAN_METHOD(XdoTool::GetViewportDimensions) {
     auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(info.This());
     auto task = new XdoToolTask_GetViewportDimensions(tool->xdo, screen);
     auto callback = new Callback(To<Function>(info[1]).ToLocalChecked());
+    AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
+}
+
+NAN_METHOD(XdoTool::SendKeysequence) {
+    auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(info.This());
+    auto window = XTypeConverter::GetWindow(info[0]);
+    char* keySequence;
+    if(!XTypeConverter::GetString(info[1], &keySequence)) {
+        Nan::ThrowError("Second parameter must be a valid string");
+        return;
+    }
+    auto delay = info[2]->Int32Value(Nan::GetCurrentContext()).ToChecked();
+    auto callback = new Callback(To<Function>(info[3]).ToLocalChecked());
+    auto task = new XdoToolTask_SendKeysequence(tool->xdo, window, keySequence, delay);
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
 
@@ -116,6 +131,7 @@ void XdoTool::Init(Local<Object> exports) {
         { "searchWindows", SearchWindows },
         { "getWindowPID", GetWindowPID },
         { "moveMouse", MoveMouse },
+        { "sendKeysequence", SendKeysequence },
         { "windowHasProperty", WindowHasProperty },
         { "activateWindow", ActivateWindow },
         { "getViewportDimensions", GetViewportDimensions }

@@ -103,7 +103,7 @@ NAN_METHOD(XScreenshooter::Constructor) {
         return;
     }
 
-    auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(info[0]->ToObject(Nan::GetCurrentContext()->GetIsolate()));
+    auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(Nan::To<Object>(info[0]).ToLocalChecked());
 
     Window window = XTypeConverter::GetWindow(info[1]);
     if(!window) {

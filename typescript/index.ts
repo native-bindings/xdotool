@@ -62,6 +62,12 @@ export interface XdoTool {
     getMouseLocation: (
         callback: XdoCallback<IMouseLocation>
     ) => void;
+    sendKeysequence: (
+        window: XWindow,
+        sequence: string,
+        delay: number,
+        callback: XdoCallback<void>
+    ) => void;
     moveMouse: (
         opts: IMoveMouseOptions,
         callback: XdoCallback<void>
@@ -195,6 +201,17 @@ export default class XdoToolAsync extends AsyncWrapper {
             this.xdo.windowHasProperty(
                 window,
                 property,
+                this.resolveOrReject(resolve, reject)
+            )
+        ));
+    }
+
+    public sendKeysequence(window: XWindow, sequence: string, delay: number): Promise<void> {
+        return new Promise<void>((resolve, reject) => (
+            this.xdo.sendKeysequence(
+                window,
+                sequence,
+                delay,
                 this.resolveOrReject(resolve, reject)
             )
         ));

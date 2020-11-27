@@ -3,18 +3,20 @@ cmake_minimum_required(VERSION 3.0)
 
 set(CMAKE_CXX_STANDARD 11)
 set(NODE_XDOTOOL_COMPILE_OPTIONS -Wfatal-errors)
-set(NODE_XDOTOOL_INCLUDE_DIRS ${CMAKE_JS_INC} ${NODE_PATH}/include/node ${NAN_INCLUDE_DIRECTORY} ${NODE_XDOTOOL_INCLUDE_DIRS})
+set(NODE_XDOTOOL_INCLUDE_DIRS ${CMAKE_JS_INC} ${NODE_INSTALL_DIR}/include/node ${NAN_INCLUDE_DIRECTORY} ${NODE_XDOTOOL_INCLUDE_DIRS})
 set(NODE_XDOTOOL_LIBRARIES xdo ${CMAKE_JS_LIB})
 
 option(NAN_INCLUDE_DIRECTORY "NAN bindings directory" "")
-option(NODE_PATH "Node.js path" "")
+option(NODE_INSTALL_DIR "Node.js path" "")
 
 set(NODE_XDOTOOL_SOURCE_FILES src/main.cpp
+    src/xdo_c.h
     src/XdoTool.cpp
     src/ResourceManager.cpp
     src/XdoToolTaskWorker.cpp
     src/XdoToolTask.cpp
     src/XTypeConverter.cpp
+    src/tasks/SendKeysequence.cpp
     src/Screenshooter.cpp
     src/XTask.cpp
     src/XService.cpp

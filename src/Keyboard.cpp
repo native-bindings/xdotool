@@ -69,7 +69,7 @@ NAN_METHOD(XKeyboard::Constructor) {
         return;
     }
 
-    auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(info[0]->ToObject(Nan::GetCurrentContext()->GetIsolate()));
+    auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(Nan::To<Object>(info[0]).ToLocalChecked());
     auto keyboard = new XKeyboard(tool->GetXdo()->xdpy);
     keyboard->Wrap(info.This());
 

@@ -14,7 +14,7 @@ void XdoToolTask_SearchWindows::Execute() {
 Local<Value> XdoToolTask_SearchWindows::GetResult() {
     Local<Array> result = New<Array>(windows_length);
     for(unsigned int i = 0; i < windows_length; i++) {
-        result->Set(i, New<String>(std::to_string(windows_list[i])).ToLocalChecked());
+        Nan::Set(result, i, New<String>(std::to_string(windows_list[i])).ToLocalChecked());
     }
     return result;
 }

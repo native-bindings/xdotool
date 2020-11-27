@@ -21,6 +21,7 @@ private:
     static NAN_METHOD(SearchWindows);
     static NAN_METHOD(GetWindowPID);
     static NAN_METHOD(GetMouseLocation);
+    static NAN_METHOD(SendKeysequence);
     static NAN_METHOD(GetViewportDimensions);
     static NAN_METHOD(MoveMouse);
     static NAN_METHOD(ActivateWindow);
