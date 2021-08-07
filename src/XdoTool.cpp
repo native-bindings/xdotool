@@ -6,18 +6,21 @@
 #include "tasks/GetWindowPID.h"
 #include "tasks/MoveMouse.h"
 #include "tasks/ActivateWindow.h"
-#include "tasks/GetImage.h"
+#include "tasks/EnterText.h"
 #include "tasks/WindowHasProperty.h"
 #include "ClassCreator.h"
-#include "XTypeConverter.h"
+#include "TypeConverter.h"
 #include "XdoToolTaskWorker.h"
+#include "tasks/Sync.h"
 
 #include <iostream>
 
 using v8::FunctionTemplate;
 using v8::Function;
 using v8::String;
+using v8::Local;
 using v8::Isolate;
+using v8::Object;
 using v8::Value;
 using Nan::Set;
 using Nan::To;
@@ -26,7 +29,7 @@ using Nan::Callback;
 using Nan::New;
 using Nan::FunctionCallback;
 
-Persistent<Function> XdoTool::constructor;
+Nan::Persistent<Function> XdoTool::constructor;
 
 XdoTool::XdoTool(xdo_t* xdo): XService(xdo->xdpy), xdo(xdo) {
 }
@@ -36,38 +39,58 @@ XdoTool::~XdoTool() {
 }
 
 NAN_METHOD(XdoTool::GetViewportDimensions) {
-    if(!info[0]->IsNumber()) {
-        Nan::ThrowError("First argument must be a valid number");
+    int screen;
+    if(!TypeConverter::GetInt32(info[0], screen)){
+        Nan::ThrowError("First argument must be a valid integer");
         return;
     }
-
-    int screen;
-    if(!info[0]->Int32Value(GetCurrentContext()).To(&screen)) {
-        std::cerr << "Empty value for screen" << std::endl;
+    XdoTool* tool;
+    if(!TypeConverter::Unwrap(info.This(),&tool)) {
+        Nan::ThrowError("Method called in invalid context");
+        return;
     }
-    auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(info.This());
     auto task = new XdoToolTask_GetViewportDimensions(tool->xdo, screen);
     auto callback = new Callback(To<Function>(info[1]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
 
 NAN_METHOD(XdoTool::SendKeysequence) {
-    auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(info.This());
-    auto window = XTypeConverter::GetWindow(info[0]);
-    char* keySequence;
-    if(!XTypeConverter::GetString(info[1], &keySequence)) {
+    XdoTool* tool = nullptr;
+    char* keySequence = nullptr;
+    Window window;
+    int32_t delay;
+    if(!TypeConverter::Unwrap(info.This(),&tool)) {
+        Nan::ThrowError("Method called in invalid context");
+        return;
+    }
+    if(!TypeConverter::GetWindow(info[0],window)) {
+        Nan::ThrowError("First argument must be a valid window identifier");
+        return;
+    }
+    if(!TypeConverter::GetString(info[1], &keySequence)) {
         Nan::ThrowError("Second parameter must be a valid string");
         return;
     }
-    auto delay = info[2]->Int32Value(Nan::GetCurrentContext()).ToChecked();
+    if(!TypeConverter::GetInt32(info[2], delay)) {
+        Nan::ThrowError("Third parameter must be a valid integer");
+        return;
+    }
     auto callback = new Callback(To<Function>(info[3]).ToLocalChecked());
     auto task = new XdoToolTask_SendKeysequence(tool->xdo, window, keySequence, delay);
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
 
 NAN_METHOD(XdoTool::GetWindowPID) {
-    auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(info.This());
-    auto window = XTypeConverter::GetWindow(info[0]);
+    Window window;
+    if(!TypeConverter::GetWindow(info[0],window)) {
+        Nan::ThrowError("First argument must be a window");
+        return;
+    }
+    XdoTool* tool;
+    if(!TypeConverter::Unwrap(info.This(),&tool)) {
+        Nan::ThrowError("Method called in invalid context");
+        return;
+    }
     auto task = new XdoToolTask_GetWindowPID(tool->xdo, window);
     auto callback = new Callback(To<Function>(info[1]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
@@ -82,45 +105,82 @@ NAN_METHOD(XdoTool::MoveMouse) {
     int x, y, screen = 0;
 
     Local<Object> opts = info[0]->ToObject(Nan::GetCurrentContext()).ToLocalChecked();
-    if(!XTypeConverter::GetInt32(opts, "x", &x) || !XTypeConverter::GetInt32(opts, "y", &y)) {
+    if(!TypeConverter::GetInt32(opts, "x", &x) || !TypeConverter::GetInt32(opts, "y", &y)) {
         Nan::ThrowError("x and y properties must be defined");
         return;
     }
-    XTypeConverter::GetInt32(opts, "screen_num", &screen);
+    TypeConverter::GetInt32(opts, "screen_num", &screen);
 
-    auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(info.This());
+    XdoTool* tool;
+    if(!TypeConverter::Unwrap(info.This(),&tool)) {
+        Nan::ThrowError("Method called in invalid context");
+        return;
+    }
     auto task = new XdoToolTask_MoveMouse(tool->xdo, x, y, screen);
     auto callback = new Callback(To<Function>(info[1]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
 
 NAN_METHOD(XdoTool::WindowHasProperty) {
-    Window window = XTypeConverter::GetWindow(info[0]);
-    if(!window) {
+    Window window;
+    if(!TypeConverter::GetWindow(info[0],window)) {
         Nan::ThrowError("First argument must be a valid window");
         return;
     }
-    char* property;
-    if(!XTypeConverter::GetString(info[1], &property)) {
+    std::string property;
+    if(!TypeConverter::GetString(info[1], property)) {
         Nan::ThrowError("Second argument must be a valid string representing window property");
         return;
     }
-    auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(info.This());
+    XdoTool* tool;
+    if(!TypeConverter::Unwrap(info.This(),&tool)) {
+        Nan::ThrowError("Method called in invalid context");
+        return;
+    }
     auto task = new XdoToolTask_WindowHasProperty(tool->xdo, window, property);
-    task->AddResource(property);
     auto callback = new Callback(To<Function>(info[2]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
 
 NAN_METHOD(XdoTool::ActivateWindow) {
-    Window window = XTypeConverter::GetWindow(info[0]);
-    if(!window) {
+    Window window;
+    if(!TypeConverter::GetWindow(info[0],window)) {
         Nan::ThrowError("First argument must be a valid string pointing to a Window object");
         return;
     }
-    auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(info.This());
+    XdoTool* tool;
+    if(!TypeConverter::Unwrap(info.This(),&tool)) {
+        Nan::ThrowError("Method called in invalid context");
+        return;
+    }
     auto task = new XdoToolTask_ActivateWindow(tool->xdo, window);
     auto callback = new Callback(To<Function>(info[1]).ToLocalChecked());
+    AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
+}
+
+NAN_METHOD(XdoTool::EnterText) {
+    Window window;
+    std::string text;
+    int32_t delay;
+    if(!TypeConverter::GetWindow(info[0],window)) {
+        Nan::ThrowError("First argument must be a valid string pointing to a Window object");
+        return;
+    }
+    if(!TypeConverter::GetString(info[1],text)) {
+        Nan::ThrowError("Second argument must be a string");
+        return;
+    }
+    if(!TypeConverter::GetInt32(info[2],delay)) {
+        Nan::ThrowError("Third argument must be an integer");
+        return;
+    }
+    XdoTool* tool;
+    if(!TypeConverter::Unwrap(info.This(),&tool)) {
+        Nan::ThrowError("Method called in invalid context");
+        return;
+    }
+    auto task = new XdoToolTask_EnterText(tool->xdo, window, text, delay);
+    auto callback = new Callback(To<Function>(info[3]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
 
@@ -131,6 +191,8 @@ void XdoTool::Init(Local<Object> exports) {
         { "searchWindows", SearchWindows },
         { "getWindowPID", GetWindowPID },
         { "moveMouse", MoveMouse },
+        { "enterText", EnterText },
+        { "sync", Sync },
         { "sendKeysequence", SendKeysequence },
         { "windowHasProperty", WindowHasProperty },
         { "activateWindow", ActivateWindow },
@@ -151,7 +213,8 @@ NAN_METHOD(XdoTool::Constructor) {
         return;
     }
 
-    XdoTool* tool = new XdoTool(xdo);
+    auto* tool = new XdoTool(xdo);
+    printf("%p\n",tool);
     tool->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
 }
@@ -170,59 +233,63 @@ NAN_METHOD(XdoTool::SearchWindows) {
     search->require = xdo_search_t::SEARCH_ANY;
     search->max_depth = -1;
 
-    auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(info.This());
+    XdoTool* tool;
+    if(!TypeConverter::Unwrap(info.This(),&tool)) {
+        Nan::ThrowError("Method called in invalid context");
+        return;
+    }
     auto task = new XdoToolTask_SearchWindows(tool->xdo, search);
     Local<Object> search_obj = Nan::To<Object>(info[0]).ToLocalChecked();
 
     task->AddResource(search);
 
     char* string;
-    if(XTypeConverter::GetString(search_obj, "title", &string)) {
+    if(TypeConverter::GetString(search_obj, "title", &string)) {
         search->title = string;
         search->searchmask |= SEARCH_TITLE;
         task->AddResource(string);
     }
 
-    if(XTypeConverter::GetString(search_obj, "winclass", &string)) {
+    if(TypeConverter::GetString(search_obj, "winclass", &string)) {
         search->winclass = string;
         search->searchmask |= SEARCH_CLASS;
         task->AddResource(string);
     }
 
-    if(XTypeConverter::GetString(search_obj, "winclassname", &string)) {
+    if(TypeConverter::GetString(search_obj, "winclassname", &string)) {
         search->winclassname = string;
         search->searchmask |= SEARCH_CLASSNAME;
         task->AddResource(string);
     }
 
-    if(XTypeConverter::GetString(search_obj, "winname", &string)) {
+    if(TypeConverter::GetString(search_obj, "winname", &string)) {
         search->winname = string;
         search->searchmask |= SEARCH_NAME;
     }
 
     int32_t int32_value;
-    if(XTypeConverter::GetInt32(search_obj, "pid", &int32_value)) {
+    if(TypeConverter::GetInt32(search_obj, "pid", &int32_value)) {
         search->pid = int32_value;
     }
 
-    if(XTypeConverter::GetInt32(search_obj, "maxDepth", &int32_value)) {
+    if(TypeConverter::GetInt32(search_obj, "maxDepth", &int32_value)) {
         search->max_depth = int32_value;
     }
 
     bool boolean_value;
-    if(XTypeConverter::GetBool(search_obj, "onlyVisible", &boolean_value)) {
+    if(TypeConverter::GetBool(search_obj, "onlyVisible", &boolean_value)) {
         search->only_visible = boolean_value ? 1 : 0;
     }
 
-    if(XTypeConverter::GetInt32(search_obj, "screen", &int32_value)) {
+    if(TypeConverter::GetInt32(search_obj, "screen", &int32_value)) {
         search->screen = int32_value;
     }
 
-    if(XTypeConverter::GetInt32(search_obj, "desktop", &int32_value)) {
+    if(TypeConverter::GetInt32(search_obj, "desktop", &int32_value)) {
         search->desktop = int32_value;
     }
 
-    if(XTypeConverter::GetInt32(search_obj, "limit", &int32_value)) {
+    if(TypeConverter::GetInt32(search_obj, "limit", &int32_value)) {
         search->limit = int32_value;
     }
 
@@ -231,8 +298,23 @@ NAN_METHOD(XdoTool::SearchWindows) {
 }
 
 NAN_METHOD(XdoTool::GetMouseLocation) {
-    auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(info.This());
+    XdoTool* tool;
+    if(!TypeConverter::Unwrap(info.This(),&tool)) {
+        Nan::ThrowError("Method called in invalid context");
+        return;
+    }
     auto task = new XdoToolTask_GetMouseLocation(tool->xdo);
+    auto callback = new Nan::Callback(Nan::To<Function>(info[0]).ToLocalChecked());
+    AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
+}
+
+NAN_METHOD(XdoTool::Sync) {
+    XdoTool* tool;
+    if(!TypeConverter::Unwrap(info.This(),&tool)) {
+        Nan::ThrowError("Method called in invalid context");
+        return;
+    }
+    auto task = new XdoToolTask_Sync(tool->xdo->xdpy);
     auto callback = new Nan::Callback(Nan::To<Function>(info[0]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }

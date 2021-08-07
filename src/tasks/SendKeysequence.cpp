@@ -1,5 +1,8 @@
 #include "SendKeysequence.h"
 
+using v8::Local;
+using v8::Value;
+
 XdoToolTask_SendKeysequence::XdoToolTask_SendKeysequence(
     xdo_t* xdo,
     Window window,

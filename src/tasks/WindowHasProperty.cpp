@@ -2,11 +2,13 @@
 
 using Nan::New;
 using v8::Boolean;
+using v8::Local;
+using v8::Value;
 
 XdoToolTask_WindowHasProperty::XdoToolTask_WindowHasProperty(
     xdo_t* xdo,
     Window window,
-    const char* property
+    std::string property
 ): XdoToolTask_GetWindowProperty(xdo, window, property), window(window) {
 
 }

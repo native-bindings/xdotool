@@ -7,7 +7,7 @@ class XdoToolTask_SendKeysequence : public XdoToolTask {
 public:
     XdoToolTask_SendKeysequence(xdo_t*, Window, std::string, uint32_t);
     void Execute() override;
-    Local<Value> GetResult() override;
+    v8::Local<v8::Value> GetResult() override;
 private:
     Window window;
     std::string sequence;

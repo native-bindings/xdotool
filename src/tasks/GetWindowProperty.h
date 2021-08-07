@@ -5,11 +5,11 @@
 
 class XdoToolTask_GetWindowProperty : public XdoToolTask {
 public:
-    XdoToolTask_GetWindowProperty(xdo_t*, Window, const char*);
+    XdoToolTask_GetWindowProperty(xdo_t*, Window, std::string);
     void Execute() override;
 private:
     Window window;
-    const char* property;
+    std::string property;
 protected:
     unsigned char* value;
     long nitems;

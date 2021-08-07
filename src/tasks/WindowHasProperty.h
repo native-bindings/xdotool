@@ -5,8 +5,8 @@
 
 class XdoToolTask_WindowHasProperty : public XdoToolTask_GetWindowProperty {
 public:
-    XdoToolTask_WindowHasProperty(xdo_t*, Window, const char*);
-    Local<Value> GetResult() override;
+    XdoToolTask_WindowHasProperty(xdo_t*, Window, std::string);
+    v8::Local<v8::Value> GetResult() override;
 private:
     Window window;
 };

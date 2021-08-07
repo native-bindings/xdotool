@@ -7,7 +7,7 @@ class XdoToolTask_ActivateWindow : public XdoToolTask {
 public:
     XdoToolTask_ActivateWindow(xdo_t*, Window);
     void Execute() override;
-    Local<Value> GetResult() override;
+    v8::Local<v8::Value> GetResult() override;
 private:
     Window window;
 };

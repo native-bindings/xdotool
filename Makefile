@@ -15,7 +15,12 @@ create_compile_commands_link: configure
 	ln -sv build/cmake-vscode-debug/compile_commands.json compile_commands.json
 
 test:
-	npx sarg --require ts-node/register test/test.ts
+	npx sarg \
+		--require ts-node/register \
+		keylogger/test.ts
 
 release:
-	npx tsc
+	npx tsc -b typescript
+
+publish: test release
+	npm publish

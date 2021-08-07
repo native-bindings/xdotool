@@ -7,9 +7,6 @@
 
 #include <iostream>
 
-using v8::Local;
-using v8::Value;
-
 struct XdoToolTask : public XTask {
 public:
     XdoToolTask(xdo_t*);

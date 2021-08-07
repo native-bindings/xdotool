@@ -3,25 +3,22 @@
 
 #include "XService.h"
 
-using v8::Object;
-using v8::ArrayBuffer;
-using v8::Local;
-
 class XKeyboard : public XService {
 public:
-    XKeyboard(Display*);
-    static void Init(Local<Object>);
-    static Persistent<Function> constructor;
-    Persistent<ArrayBuffer> arrayBuffer;
-    char* Keys();
-    Local<ArrayBuffer> GetArrayBuffer();
-    ~XKeyboard();
-private:
     char keys[32];
+    explicit XKeyboard(Display*);
+    static void Init(v8::Local<v8::Object>);
+
+    Nan::Persistent<v8::Object> arrayBuffer;
+    v8::Local<v8::Value> GetBuffer();
+    ~XKeyboard() override;
+    static Nan::Persistent<v8::Function> constructor;
+private:
     static NAN_METHOD(QueryKeymap);
     static NAN_METHOD(Constructor);
     static NAN_METHOD(KeycodeToKeysym);
     static NAN_METHOD(KeysymToString);
+    static NAN_METHOD(GetActiveKeysToKeycodeList);
 };
 
 #endif // NODE_XDOTOOL_KEYBOARD_H_

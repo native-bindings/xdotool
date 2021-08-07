@@ -7,7 +7,7 @@ class XdoToolTask_GetViewportDimensions : public XdoToolTask {
 public:
     XdoToolTask_GetViewportDimensions(xdo_t*, int);
     void Execute() override;
-    Local<Value> GetResult() override;
+    v8::Local<v8::Value> GetResult() override;
 private:
     int screen;
     unsigned int width;

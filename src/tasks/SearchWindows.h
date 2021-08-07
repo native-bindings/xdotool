@@ -3,16 +3,12 @@
 
 #include "../XdoToolTask.h"
 
-using v8::Array;
-using v8::String;
-using Nan::New;
-
 class XdoToolTask_SearchWindows : public XdoToolTask {
 public:
     XdoToolTask_SearchWindows(xdo_t* xdo, xdo_search_t* search);
     ~XdoToolTask_SearchWindows() override;
     void Execute() override;
-    Local<Value> GetResult() override;
+    v8::Local<v8::Value> GetResult() override;
 private:
     xdo_search_t* search;
     Window* windows_list;

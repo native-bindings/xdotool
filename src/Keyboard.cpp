@@ -3,11 +3,16 @@
 #include "tasks/QueryKeymap.h"
 #include "XdoToolTaskWorker.h"
 #include "ClassCreator.h"
+#include "TypeConverter.h"
 
 #include <X11/XKBlib.h>
 
 using v8::Number;
 using v8::String;
+using v8::Local;
+using v8::Value;
+using v8::Object;
+using v8::Function;
 using v8::ArrayBufferCreationMode;
 
 using Nan::To;
@@ -15,26 +20,20 @@ using Nan::Set;
 using Nan::Callback;
 using Nan::New;
 
-Persistent<Function> XKeyboard::constructor;
+Nan::Persistent<v8::Function> XKeyboard::constructor;
 
-XKeyboard::XKeyboard(Display* display): XService(display) {
-
+XKeyboard::XKeyboard(Display* display): XService(display), keys{} {
 }
 
-XKeyboard::~XKeyboard() {
-    arrayBuffer.Reset();
-}
-
-char* XKeyboard::Keys() {
-    return keys;
-}
+XKeyboard::~XKeyboard() {}
 
 void XKeyboard::Init(Local<Object>exports) {
-    std::map<std::string, FunctionCallback> methods {
+    std::map<std::string, Nan::FunctionCallback> methods {
         { "constructor", Constructor },
         { "queryKeymap", QueryKeymap },
         { "keycodeToKeysym", KeycodeToKeysym },
-        { "keysymToString", KeysymToString }
+        { "keysymToString", KeysymToString },
+        { "getActiveKeysToKeycodeList", GetActiveKeysToKeycodeList }
     };
     Set(
         exports,
@@ -45,31 +44,39 @@ void XKeyboard::Init(Local<Object>exports) {
 
 NAN_METHOD(XKeyboard::KeycodeToKeysym) {
     uint32_t keycode;
-    if(!info[0]->Uint32Value(Nan::GetCurrentContext()).To(&keycode)) {
-        Nan::ThrowError("First argument must be a valid keycode");
+    XKeyboard* kbd = nullptr;
+    if(!TypeConverter::GetUint32(info[0],keycode)) {
+        Nan::ThrowError("First argument must be an integer");
         return;
     }
-    XKeyboard* kbd = Unwrap<XKeyboard>(info.This());
+    if(!TypeConverter::Unwrap<XKeyboard>(info.This(),&kbd)) {
+        Nan::ThrowError("Method called under invalid context.");
+        return;
+    }
     KeySym keysym = XkbKeycodeToKeysym(kbd->display, keycode, 0, 0);
     info.GetReturnValue().Set(New<Number>(keysym));
 }
 
 NAN_METHOD(XKeyboard::KeysymToString) {
     uint32_t keysym;
-    if(!info[0]->Uint32Value(Nan::GetCurrentContext()).To(&keysym)) {
+    if(!TypeConverter::GetUint32(info[0],keysym)){
         Nan::ThrowError("First argument must be a valid keysym");
         return;
     }
-    info.GetReturnValue().Set(New<String>(XKeysymToString(keysym)).ToLocalChecked());
+    char* result = XKeysymToString(keysym);
+    if(!result) {
+        Nan::ThrowError(std::string("Keysym " + std::to_string(keysym) + " does not exist").c_str());
+        return;
+    }
+    info.GetReturnValue().Set(New<String>(result).ToLocalChecked());
 }
 
 NAN_METHOD(XKeyboard::Constructor) {
-    if(info[0]->IsUndefined() || !info[0]->IsObject()) {
+    XdoTool* tool;
+    if(!TypeConverter::Unwrap<XdoTool>(info[0],&tool)){
         Nan::ThrowError("First argument must be a valid instance of XdoTool");
         return;
     }
-
-    auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(Nan::To<Object>(info[0]).ToLocalChecked());
     auto keyboard = new XKeyboard(tool->GetXdo()->xdpy);
     keyboard->Wrap(info.This());
 
@@ -77,23 +84,29 @@ NAN_METHOD(XKeyboard::Constructor) {
 }
 
 NAN_METHOD(XKeyboard::QueryKeymap) {
-    auto kbd = Nan::ObjectWrap::Unwrap<XKeyboard>(info.This());
+    XKeyboard* kbd = nullptr;
+    if(!TypeConverter::Unwrap(info.This(),&kbd)) {
+        Nan::ThrowError("Method called under invalid context.");
+        return;
+    }
     auto task = new XTask_QueryKeymap(kbd);
     auto callback = new Callback(To<Function>(info[0]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
 
-Local<ArrayBuffer> XKeyboard::GetArrayBuffer() {
-    Isolate* isolate = Nan::GetCurrentContext()->GetIsolate();
-    if(!arrayBuffer.IsEmpty()) {
-        return New(arrayBuffer);
+Local<Value> XKeyboard::GetBuffer() {
+    if(arrayBuffer.IsEmpty()) {
+        auto buffer = v8::ArrayBuffer::New(
+            Nan::GetCurrentContext()->GetIsolate(),
+            keys,
+            32,
+            v8::ArrayBufferCreationMode::kExternalized
+        );
+        arrayBuffer.Reset(buffer);
     }
-    Local<ArrayBuffer> buffer = ArrayBuffer::New(
-        Nan::GetCurrentContext()->GetIsolate(),
-        keys,
-        32,
-        ArrayBufferCreationMode::kExternalized
-    );
-    arrayBuffer.Reset(buffer);
-    return New(arrayBuffer);
+    return Nan::New(arrayBuffer);
+}
+
+NAN_METHOD(XKeyboard::GetActiveKeysToKeycodeList) {
+
 }

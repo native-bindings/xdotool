@@ -2,6 +2,8 @@
 
 using Nan::New;
 using v8::Number;
+using v8::Local;
+using v8::Value;
 
 XdoToolTask_GetWindowPID::XdoToolTask_GetWindowPID(
     xdo_t* xdo,

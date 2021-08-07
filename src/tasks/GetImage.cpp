@@ -1,6 +1,10 @@
 #include "GetImage.h"
 
-XdoToolTask_GetImage::XdoToolTask_GetImage(XScreenshooter* screenshooter): XTask(screenshooter->GetDisplay()), screenshooter(screenshooter) {
+using v8::Local;
+using v8::Value;
+using v8::ArrayBuffer;
+
+XdoToolTask_GetImage::XdoToolTask_GetImage(XScreenshooter* screenshooter): XTask(screenshooter->display), screenshooter(screenshooter) {
 }
 
 void XdoToolTask_GetImage::Execute() {

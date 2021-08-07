@@ -1,5 +1,11 @@
 #include "SearchWindows.h"
 
+using v8::Local;
+using v8::Value;
+using v8::String;
+using v8::Array;
+using Nan::New;
+
 XdoToolTask_SearchWindows::XdoToolTask_SearchWindows(xdo_t* xdo, xdo_search_t* search): XdoToolTask(xdo), search(search) {}
 
 XdoToolTask_SearchWindows::~XdoToolTask_SearchWindows() {

@@ -4,44 +4,36 @@
 #include <map>
 #include <nan.h>
 
-using v8::Function;
-using v8::Local;
-using v8::Isolate;
-using v8::FunctionTemplate;
-
-using Nan::FunctionCallback;
-
 class ClassCreator {
 public:
     template<typename T>
-    static Local<Function> NewClass(const char* className, std::map<std::string, FunctionCallback>& methods);
+    static v8::Local<v8::Function> NewClass(std::string className, std::map<std::string, Nan::FunctionCallback>& methods);
 };
 
 template<typename T>
-Local<Function> ClassCreator::NewClass(const char* className, std::map<std::string, FunctionCallback>& methods) {
-    Isolate* isolate = Nan::GetCurrentContext()->GetIsolate();
-
-    if(!T::constructor.IsEmpty()) {
-        printf("Persistent not empty");
-        return T::constructor.Get(isolate);
-    }
+v8::Local<v8::Function> ClassCreator::NewClass(std::string className, std::map<std::string, Nan::FunctionCallback>& methods) {
+//    v8::Isolate* isolate = Nan::GetCurrentContext()->GetIsolate();
+//
+//    if(!T::constructor.IsEmpty()) {
+//        printf("Persistent not empty");
+//        return T::constructor.Get(isolate);
+//    }
 
     if(methods.find("constructor") == methods.end()) {
         throw std::runtime_error("'constructor' field on methods map is mandatory");
     }
 
-    FunctionCallback Constructor = methods["constructor"];
-    Local<FunctionTemplate> tpl = New<FunctionTemplate>(Constructor);
-    tpl->SetClassName(New<String>(className).ToLocalChecked());
+    Nan::FunctionCallback Constructor = methods["constructor"];
+    v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(Constructor);
+    tpl->SetClassName(Nan::New<v8::String>(className).ToLocalChecked());
     tpl->InstanceTemplate()->SetInternalFieldCount(methods.size());
 
     for(auto & method : methods) {
         SetPrototypeMethod(tpl, method.first.c_str(), method.second);
     }
 
-    T::constructor.Reset(tpl->GetFunction(Nan::GetCurrentContext()).ToLocalChecked());
-
-    return T::constructor.Get(isolate);
+    T::constructor.Reset(Nan::GetFunction(tpl).ToLocalChecked());
+    return Nan::GetFunction(tpl).ToLocalChecked();
 }
 
 #endif // NODE_XDOTOOL_CLASS_CREATOR_H_

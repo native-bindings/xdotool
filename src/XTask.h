@@ -6,23 +6,18 @@
 
 #include <iostream>
 
-using v8::Local;
-using v8::Value;
-
 /**
  * Describe X11 task
  */
 struct XTask : public ResourceManager {
 public:
-    const char* failure;
-    XTask(Display*);
-    virtual ~XTask() {}
-    void SetFailure(const char* failure);
-    virtual void Execute() = 0;
-    virtual Local<Value> GetResult() = 0;
-    Display* GetDisplay();
-protected:
     Display* display;
+    std::string failure;
+    explicit XTask(Display*);
+    virtual ~XTask() = default;
+    void SetFailure(std::string failure);
+    virtual void Execute() = 0;
+    virtual v8::Local<v8::Value> GetResult() = 0;
 };
 
 #endif // NODE_XDOTOOL_XTASK_H_

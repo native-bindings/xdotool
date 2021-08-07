@@ -1,11 +1,26 @@
 #include "Screenshooter.h"
-#include "XTypeConverter.h"
+#include "TypeConverter.h"
 #include "XdoToolTaskWorker.h"
 #include "tasks/GetImage.h"
 #include "XdoTool.h"
 #include "ClassCreator.h"
 
 #include <X11/Xutil.h>
+
+using v8::Local;
+using v8::String;
+using v8::Object;
+using v8::ArrayBuffer;
+using v8::Function;
+using v8::FunctionTemplate;
+using Nan::SetPrototypeMethod;
+using Nan::FunctionCallback;
+using Nan::New;
+using Nan::Callback;
+using Nan::Set;
+using Nan::To;
+
+Nan::Persistent<Function> XScreenshooter::constructor;
 
 XScreenshooter::XScreenshooter(Display* display, Window window): XService(display), window(window) {
     if(XGetWindowAttributes(display, window, &attributes) != X_OK) {
@@ -55,20 +70,6 @@ void XScreenshooter::GetImage() {
     XDestroyImage(image);
 }
 
-using v8::Local;
-using v8::String;
-using v8::Object;
-using v8::Function;
-using v8::FunctionTemplate;
-using Nan::SetPrototypeMethod;
-using Nan::FunctionCallback;
-using Nan::New;
-using Nan::Callback;
-using Nan::Set;
-using Nan::To;
-
-Persistent<Function> XScreenshooter::constructor;
-
 void XScreenshooter::Init(Local<Object> exports) {
     std::map<std::string, FunctionCallback> methods {
         { "constructor", Constructor },
@@ -105,8 +106,8 @@ NAN_METHOD(XScreenshooter::Constructor) {
 
     auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(Nan::To<Object>(info[0]).ToLocalChecked());
 
-    Window window = XTypeConverter::GetWindow(info[1]);
-    if(!window) {
+    Window window;
+    if(!TypeConverter::GetWindow(info[1],window)) {
         window = XRootWindow(tool->GetXdo()->xdpy, 0);
         if(!window) {
             Nan::ThrowError("Could not get root window");
@@ -123,6 +124,6 @@ NAN_METHOD(XScreenshooter::Constructor) {
 NAN_METHOD(XScreenshooter::GetImage) {
     auto ss = Nan::ObjectWrap::Unwrap<XScreenshooter>(info.This());
     auto task = new XdoToolTask_GetImage(ss);
-    Callback* callback = new Callback(To<Function>(info[0]).ToLocalChecked());
+    auto* callback = new Callback(To<Function>(info[0]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }

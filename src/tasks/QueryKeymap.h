@@ -6,9 +6,9 @@
 
 class XTask_QueryKeymap : public XTask {
 public:
-    XTask_QueryKeymap(XKeyboard*);
+    explicit XTask_QueryKeymap(XKeyboard*);
     void Execute() override;
-    Local<Value> GetResult() override;
+    v8::Local<v8::Value> GetResult() override;
 private:
     XKeyboard* keyboard;
 };

@@ -3,18 +3,13 @@
 
 #include "XService.h"
 
-using v8::Object;
-using v8::Local;
-using Nan::Persistent;
-using v8::Function;
-
 class XdoTool : public XService {
 public:
-    XdoTool(xdo_t* xdo);
-    ~XdoTool();
-    static void Init(Local<Object> exports);
+    explicit XdoTool(xdo_t* xdo);
+    ~XdoTool() override;
+    static void Init(v8::Local<v8::Object> exports);
     xdo_t* GetXdo() {return xdo;}
-    static Persistent<Function> constructor;
+    static Nan::Persistent<v8::Function> constructor;
 private:
     xdo_t* xdo;
     static NAN_METHOD(Constructor);
@@ -25,8 +20,8 @@ private:
     static NAN_METHOD(GetViewportDimensions);
     static NAN_METHOD(MoveMouse);
     static NAN_METHOD(ActivateWindow);
-    static NAN_METHOD(QueryKeymap);
-    static NAN_METHOD(GetImage);
+    static NAN_METHOD(EnterText);
+    static NAN_METHOD(Sync);
     static NAN_METHOD(WindowHasProperty);
 };
 

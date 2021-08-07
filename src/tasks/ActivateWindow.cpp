@@ -1,5 +1,8 @@
 #include "ActivateWindow.h"
 
+using v8::Local;
+using v8::Value;
+
 XdoToolTask_ActivateWindow::XdoToolTask_ActivateWindow(
     xdo_t* xdo,
     Window window

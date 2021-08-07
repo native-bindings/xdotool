@@ -1,5 +1,10 @@
 import { Suite } from 'sarg';
-import XdoToolAsync, { XdoToolBindings, ScreenshooterAsync, KeyboardAsync } from '../typescript';
+import {
+    XdoToolAsync,
+    XdoToolBindings,
+    ScreenshooterAsync,
+    KeyboardAsync
+} from '../typescript';
 
 const suite = new Suite();
 const {test} = suite;

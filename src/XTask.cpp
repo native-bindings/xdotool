@@ -1,15 +1,11 @@
 #include "XTask.h"
 
-XTask::XTask(Display* display): display(display), failure(nullptr) {}
+XTask::XTask(Display* display): display(display), failure("") {}
 
-void XTask::SetFailure(const char* failure) {
-    if(this->failure != nullptr) {
-        std::cerr << "Trying to redefine failure message to: " << failure << std::endl;
+void XTask::SetFailure(std::string newFailure) {
+    if(!failure.empty()) {
+        std::cerr << "Trying to redefine failure message to: " << newFailure << std::endl;
         return;
     }
-    this->failure = failure;
-}
-
-Display* XTask::GetDisplay() {
-    return display;
+    failure = newFailure;
 }

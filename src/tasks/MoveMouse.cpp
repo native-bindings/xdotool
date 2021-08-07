@@ -1,5 +1,8 @@
 #include "MoveMouse.h"
 
+using v8::Local;
+using v8::Value;
+
 XdoToolTask_MoveMouse::XdoToolTask_MoveMouse(
     xdo_t* xdo,
     int x,

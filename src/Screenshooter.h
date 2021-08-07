@@ -5,24 +5,18 @@
 
 #include <boost/optional.hpp>
 
-using v8::Local;
-using v8::Object;
-using v8::Function;
-using v8::ArrayBuffer;
-using Nan::Persistent;
-
 class XScreenshooter : public XService {
 public:
     XScreenshooter(Display*, Window);
     ~XScreenshooter();
-    Local<ArrayBuffer> GetArrayBuffer();
+    v8::Local<v8::ArrayBuffer> GetArrayBuffer();
     void GetImage();
     uint32_t ByteLength();
     uint8_t* Data();
-    static void Init(Local<Object>);
-    static Persistent<Function> constructor;
+    static void Init(v8::Local<v8::Object>);
+    static Nan::Persistent<v8::Function> constructor;
 private:
-    Persistent<ArrayBuffer> arrayBuffer;
+    Nan::Persistent<v8::ArrayBuffer> arrayBuffer;
     Window window;
     XWindowAttributes attributes;
     XImage* image;

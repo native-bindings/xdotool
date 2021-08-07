@@ -4,6 +4,8 @@ using Nan::New;
 using Nan::Set;
 using v8::Number;
 using v8::String;
+using v8::Local;
+using v8::Value;
 using v8::Object;
 
 XdoToolTask_GetViewportDimensions::XdoToolTask_GetViewportDimensions(xdo_t* xdo, int screen): XdoToolTask(xdo), screen(screen) {

@@ -3,18 +3,12 @@
 
 #include "../XdoToolTask.h"
 
-using v8::Object;
-using v8::String;
-using v8::Number;
-using Nan::New;
-using Nan::Set;
-
 class XdoToolTask_GetMouseLocation : public XdoToolTask {
 public:
-    XdoToolTask_GetMouseLocation(xdo_t*);
-    ~XdoToolTask_GetMouseLocation() override;
+    explicit XdoToolTask_GetMouseLocation(xdo_t*);
+    ~XdoToolTask_GetMouseLocation() override = default;
     void Execute() override;
-    Local<Value> GetResult() override;
+    v8::Local<v8::Value> GetResult() override;
 private:
     int x;
     int y;
