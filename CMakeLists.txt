@@ -15,7 +15,7 @@ set(NODE_XDOTOOL_SOURCE_FILES src/main.cpp
     src/ResourceManager.cpp
     src/XdoToolTaskWorker.cpp
     src/XdoToolTask.cpp
-        src/TypeConverter.cpp
+    src/TypeConverter.cpp
     src/tasks/SendKeysequence.cpp
     src/Screenshooter.cpp
     src/XTask.cpp
@@ -32,7 +32,10 @@ set(NODE_XDOTOOL_SOURCE_FILES src/main.cpp
     src/tasks/GetMouseLocation.cpp
     src/tasks/ActivateWindow.cpp
     src/tasks/SearchWindows.cpp
-        src/tasks/GetActiveKeysToKeycodeList.cpp src/tasks/GetActiveKeysToKeycodeList.h src/tasks/Sync.cpp src/tasks/Sync.h)
+    #src/tasks/GetActiveKeysToKeycodeList.cpp
+    #src/tasks/GetActiveKeysToKeycodeList.h
+    src/tasks/Sync.cpp
+    src/tasks/Sync.h)
 
 add_library(node_xdotool SHARED ${NODE_XDOTOOL_SOURCE_FILES})
 set_target_properties(node_xdotool PROPERTIES PREFIX "" SUFFIX ".node")
