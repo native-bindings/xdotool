@@ -12,6 +12,7 @@
 #include "TypeConverter.h"
 #include "XdoToolTaskWorker.h"
 #include "tasks/Sync.h"
+#include "tasks/GetFocusedWindow.h"
 
 #include <iostream>
 
@@ -184,6 +185,17 @@ NAN_METHOD(XdoTool::EnterText) {
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
 
+NAN_METHOD(XdoTool::GetFocusedWindow) {
+    XdoTool* tool;
+    if(!TypeConverter::Unwrap(info.This(),&tool)) {
+        Nan::ThrowError("Method called in invalid context");
+        return;
+    }
+    auto task = new XdoToolTask_GetFocusedWindow(tool->xdo);
+    auto callback = new Callback(To<Function>(info[0]).ToLocalChecked());
+    AsyncQueueWorker(new XdoToolTaskWorker(callback,task));
+}
+
 void XdoTool::Init(Local<Object> exports) {
     std::map<std::string, FunctionCallback> methods {
         { "constructor", Constructor },
@@ -191,6 +203,7 @@ void XdoTool::Init(Local<Object> exports) {
         { "searchWindows", SearchWindows },
         { "getWindowPID", GetWindowPID },
         { "moveMouse", MoveMouse },
+        { "getFocusedWindow", GetFocusedWindow },
         { "enterText", EnterText },
         { "sync", Sync },
         { "sendKeysequence", SendKeysequence },

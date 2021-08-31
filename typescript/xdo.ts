@@ -90,6 +90,7 @@ export interface XdoTool {
         screen: number,
         callback: XdoCallback<IXdoViewportDimensions>
     ) => void;
+    getFocusedWindow: (callback: XdoCallback<XWindow>) => void;
     /**
      * Get the PID owning a window. Not all applications support this.
      * It looks at the _NET_WM_PID property of the window.
@@ -141,6 +142,13 @@ export default class XdoToolAsync extends AsyncWrapper {
             this.xdo.windowHasProperty(
                 window,
                 property,
+                this.resolveOrReject(resolve, reject)
+            )
+        ));
+    }
+    public getFocusedWindow(): Promise<XWindow> {
+        return new Promise<XWindow>((resolve, reject) => (
+            this.xdo.getFocusedWindow(
                 this.resolveOrReject(resolve, reject)
             )
         ));

@@ -1,5 +1,4 @@
 #include <nan.h>
-#include <nan_object_wrap.h>
 
 #include "Screenshooter.h"
 #include "Keyboard.h"

@@ -1,13 +1,13 @@
 project(node_xdotool)
 cmake_minimum_required(VERSION 3.0)
 
+option(NAN_INCLUDE_DIRECTORY "NAN bindings directory" ${CMAKE_CURRENT_SOURCE_DIR}/node_modules/nan)
+option(NODE_INSTALL_DIR "Node.js path" "")
+
 set(CMAKE_CXX_STANDARD 11)
 set(NODE_XDOTOOL_COMPILE_OPTIONS -Wfatal-errors)
 set(NODE_XDOTOOL_INCLUDE_DIRS ${CMAKE_JS_INC} ${NODE_INSTALL_DIR}/include/node ${NAN_INCLUDE_DIRECTORY} ${NODE_XDOTOOL_INCLUDE_DIRS})
 set(NODE_XDOTOOL_LIBRARIES xdo ${CMAKE_JS_LIB})
-
-option(NAN_INCLUDE_DIRECTORY "NAN bindings directory" "")
-option(NODE_INSTALL_DIR "Node.js path" "")
 
 set(NODE_XDOTOOL_SOURCE_FILES src/main.cpp
     src/xdo_c.h
@@ -35,7 +35,7 @@ set(NODE_XDOTOOL_SOURCE_FILES src/main.cpp
     #src/tasks/GetActiveKeysToKeycodeList.cpp
     #src/tasks/GetActiveKeysToKeycodeList.h
     src/tasks/Sync.cpp
-    src/tasks/Sync.h)
+    src/tasks/Sync.h src/tasks/GetFocusedWindow.cpp src/tasks/GetFocusedWindow.h)
 
 add_library(node_xdotool SHARED ${NODE_XDOTOOL_SOURCE_FILES})
 set_target_properties(node_xdotool PROPERTIES PREFIX "" SUFFIX ".node")
