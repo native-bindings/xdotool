@@ -3,8 +3,6 @@
 
 #include "XService.h"
 
-#include <boost/optional.hpp>
-
 class XScreenshooter : public XService {
 public:
     XScreenshooter(Display*, Window);

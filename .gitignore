@@ -1,6 +1,7 @@
-node_modules/
-.idea/
-cmake-build-*/
-build/
-out/
-.history/
+/node_modules
+/.idea
+/cmake-build-*
+/build
+/out
+/.history
+/yarn-error.log
