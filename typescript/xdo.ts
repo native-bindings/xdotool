@@ -2,7 +2,7 @@ import bindings from "bindings";
 import AsyncWrapper from "./AsyncWrapper";
 import { XScreenshooter } from "./Screenshooter";
 
-export type XWindow = string;
+export type XID = unknown;
 
 export interface IXdoViewportDimensions {
     width: number;
@@ -62,22 +62,31 @@ export type XdoCallback<T> = (
     value: T
 ) => void;
 
+export interface IWindowSize {
+    width: number;
+    height: number;
+}
+
 export interface XdoTool {
     getMouseLocation: (
         callback: XdoCallback<IMouseLocation>
     ) => void;
     sendKeysequence: (
-        window: XWindow,
+        window: XID,
         sequence: string,
         delay: number,
         callback: XdoCallback<void>
+    ) => void;
+    getWindowSize: (
+        window: XID,
+        callback: XdoCallback<IWindowSize>
     ) => void;
     moveMouse: (
         opts: IMoveMouseOptions,
         callback: XdoCallback<void>
     ) => void;
     enterText: (
-        win: string,
+        win: XID,
         text: string,
         delay: number,
         callback: XdoCallback<void>
@@ -90,7 +99,7 @@ export interface XdoTool {
         screen: number,
         callback: XdoCallback<IXdoViewportDimensions>
     ) => void;
-    getFocusedWindow: (callback: XdoCallback<XWindow>) => void;
+    getFocusedWindow: (callback: XdoCallback<XID>) => void;
     /**
      * Get the PID owning a window. Not all applications support this.
      * It looks at the _NET_WM_PID property of the window.
@@ -98,16 +107,16 @@ export interface XdoTool {
      * @return the process id or 0 if no pid found.
      */
     getWindowPID: (
-        window: XWindow,
+        window: XID,
         callback: XdoCallback<number>
     ) => void;
     sync: (callback: XdoCallback<void>) => void;
     activateWindow: (
-        window: XWindow,
+        window: XID,
         callback: XdoCallback<void>
     ) => void;
     windowHasProperty: (
-        window: XWindow,
+        window: XID,
         property: string,
         callback: XdoCallback<boolean>
     ) => void;
@@ -126,7 +135,7 @@ export interface IXdoTool {
         new(): XdoTool;
     };
     Screenshooter: {
-        new(xdo: XdoTool, window?: XWindow): XScreenshooter;
+        new(xdo: XdoTool, window?: XID): XScreenshooter;
     };
     Keyboard: {
         new(xdo: XdoTool): XKeyboard;
@@ -137,7 +146,7 @@ export default class XdoToolAsync extends AsyncWrapper {
     public constructor(private readonly xdo: XdoTool) {
         super();
     }
-    public windowHasProperty(window: XWindow, property: string): Promise<boolean> {
+    public windowHasProperty(window: XID, property: string): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => (
             this.xdo.windowHasProperty(
                 window,
@@ -146,8 +155,8 @@ export default class XdoToolAsync extends AsyncWrapper {
             )
         ));
     }
-    public getFocusedWindow(): Promise<XWindow> {
-        return new Promise<XWindow>((resolve, reject) => (
+    public getFocusedWindow(): Promise<XID> {
+        return new Promise<XID>((resolve, reject) => (
             this.xdo.getFocusedWindow(
                 this.resolveOrReject(resolve, reject)
             )
@@ -161,7 +170,7 @@ export default class XdoToolAsync extends AsyncWrapper {
         ));
     }
 
-    public enterText(window: XWindow, text: string, delay: number): Promise<void> {
+    public enterText(window: XID, text: string, delay: number): Promise<void> {
         return new Promise<void>((resolve, reject) => (
             this.xdo.enterText(
                 window,
@@ -172,7 +181,7 @@ export default class XdoToolAsync extends AsyncWrapper {
         ));
     }
 
-    public sendKeysequence(window: XWindow, sequence: string, delay: number): Promise<void> {
+    public sendKeysequence(window: XID, sequence: string, delay: number): Promise<void> {
         return new Promise<void>((resolve, reject) => (
             this.xdo.sendKeysequence(
                 window,
@@ -183,7 +192,7 @@ export default class XdoToolAsync extends AsyncWrapper {
         ));
     }
 
-    public activateWindow(window: XWindow): Promise<void> {
+    public activateWindow(window: XID): Promise<void> {
         return new Promise<void>((resolve, reject) => (
             this.xdo.activateWindow(
                 window,
@@ -209,6 +218,15 @@ export default class XdoToolAsync extends AsyncWrapper {
             this.xdo.getViewportDimensions(
                 screen,
                 this.resolveOrReject<IXdoViewportDimensions>(resolve, reject)
+            )
+        ));
+    }
+
+    public getWindowSize(window: XID): Promise<IWindowSize> {
+        return new Promise<IWindowSize>((resolve, reject) => (
+            this.xdo.getWindowSize(
+                window,
+                this.resolveOrReject<IWindowSize>(resolve, reject)
             )
         ));
     }

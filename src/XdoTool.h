@@ -15,6 +15,7 @@ private:
     static NAN_METHOD(Constructor);
     static NAN_METHOD(SearchWindows);
     static NAN_METHOD(GetWindowPID);
+    static NAN_METHOD(GetWindowSize);
     static NAN_METHOD(GetFocusedWindow);
     static NAN_METHOD(GetMouseLocation);
     static NAN_METHOD(SendKeysequence);

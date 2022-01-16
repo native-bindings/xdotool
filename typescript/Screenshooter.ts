@@ -3,7 +3,7 @@ import {
     Screenshooter,
     XdoCallback,
     XdoTool,
-    XWindow
+    XID
 } from "./xdo";
 
 export interface XScreenshooter {
@@ -12,7 +12,7 @@ export interface XScreenshooter {
 
 export default class ScreenshooterAsync extends AsyncWrapper {
     readonly #ss: XScreenshooter;
-    public constructor(xdo: XdoTool, window?: XWindow) {
+    public constructor(xdo: XdoTool, window?: XID) {
         super();
         this.#ss = new Screenshooter(xdo, window);
     }

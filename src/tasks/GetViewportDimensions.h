@@ -3,9 +3,11 @@
 
 #include "../XdoToolTask.h"
 
-class XdoToolTask_GetViewportDimensions : public XdoToolTask {
+namespace tasks {
+
+class GetViewportDimensions : public XdoToolTask {
 public:
-    XdoToolTask_GetViewportDimensions(xdo_t*, int);
+    GetViewportDimensions(xdo_t*, int);
     void Execute() override;
     v8::Local<v8::Value> GetResult() override;
 private:
@@ -13,5 +15,7 @@ private:
     unsigned int width;
     unsigned int height;
 };
+
+}
 
 #endif // NODE_XDOTOOL_GET_VIEWPORT_DIMENSIONS_H_

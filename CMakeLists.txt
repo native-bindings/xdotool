@@ -35,7 +35,7 @@ set(NODE_XDOTOOL_SOURCE_FILES src/main.cpp
     #src/tasks/GetActiveKeysToKeycodeList.cpp
     #src/tasks/GetActiveKeysToKeycodeList.h
     src/tasks/Sync.cpp
-    src/tasks/Sync.h src/tasks/GetFocusedWindow.cpp src/tasks/GetFocusedWindow.h)
+    src/tasks/Sync.h src/tasks/GetFocusedWindow.cpp src/tasks/GetFocusedWindow.h src/tasks/GetWindowSize.cpp src/tasks/GetWindowSize.h)
 
 add_library(node_xdotool SHARED ${NODE_XDOTOOL_SOURCE_FILES})
 set_target_properties(node_xdotool PROPERTIES PREFIX "" SUFFIX ".node")

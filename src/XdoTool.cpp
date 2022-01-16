@@ -13,6 +13,7 @@
 #include "XdoToolTaskWorker.h"
 #include "tasks/Sync.h"
 #include "tasks/GetFocusedWindow.h"
+#include "tasks/GetWindowSize.h"
 
 #include <iostream>
 
@@ -50,7 +51,23 @@ NAN_METHOD(XdoTool::GetViewportDimensions) {
         Nan::ThrowError("Method called in invalid context");
         return;
     }
-    auto task = new XdoToolTask_GetViewportDimensions(tool->xdo, screen);
+    auto task = new tasks::GetViewportDimensions(tool->xdo, screen);
+    auto callback = new Callback(To<Function>(info[1]).ToLocalChecked());
+    AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
+}
+
+NAN_METHOD(XdoTool::GetWindowSize) {
+    XID window;
+    if(!TypeConverter::GetWindow(info[0], window)){
+        Nan::ThrowError("First argument must be a valid integer");
+        return;
+    }
+    XdoTool* tool;
+    if(!TypeConverter::Unwrap(info.This(),&tool)) {
+        Nan::ThrowError("Method called in invalid context");
+        return;
+    }
+    auto task = new tasks::GetWindowSize(tool->xdo, window);
     auto callback = new Callback(To<Function>(info[1]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
@@ -154,7 +171,7 @@ NAN_METHOD(XdoTool::ActivateWindow) {
         Nan::ThrowError("Method called in invalid context");
         return;
     }
-    auto task = new XdoToolTask_ActivateWindow(tool->xdo, window);
+    auto task = new tasks::ActivateWindow(tool->xdo, window);
     auto callback = new Callback(To<Function>(info[1]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
@@ -206,6 +223,7 @@ void XdoTool::Init(Local<Object> exports) {
         { "getFocusedWindow", GetFocusedWindow },
         { "enterText", EnterText },
         { "sync", Sync },
+        { "getWindowSize", GetWindowSize },
         { "sendKeysequence", SendKeysequence },
         { "windowHasProperty", WindowHasProperty },
         { "activateWindow", ActivateWindow },

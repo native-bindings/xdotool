@@ -3,12 +3,12 @@
 using v8::Local;
 using v8::Value;
 
-XdoToolTask_ActivateWindow::XdoToolTask_ActivateWindow(
+tasks::ActivateWindow::ActivateWindow(
     xdo_t* xdo,
     Window window
 ): XdoToolTask(xdo), window(window) {}
 
-void XdoToolTask_ActivateWindow::Execute() {
+void tasks::ActivateWindow::Execute() {
     if(xdo_activate_window(xdo, window) != XDO_SUCCESS) {
         SetFailure("Failed to activate window");
         return;
@@ -18,6 +18,6 @@ void XdoToolTask_ActivateWindow::Execute() {
     }
 }
 
-Local<Value> XdoToolTask_ActivateWindow::GetResult() {
+Local<Value> tasks::ActivateWindow::GetResult() {
     return Nan::Undefined();
 }
