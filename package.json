@@ -5,8 +5,7 @@
     "main": "./out/index.js",
     "typings": "./out/index.d.ts",
     "scripts": {
-        "build": "cmake-js -B Release --prefer-clang --out build/cmake-js compile",
-        "postinstall": "npm run build"
+        "install": "cmake-js -B Release --prefer-clang --out build/cmake-js compile"
     },
     "ava": {
         "nodeArguments": [
