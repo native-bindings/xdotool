@@ -3,13 +3,8 @@ project(node_xdotool CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(NODE_XDOTOOL_COMPILE_OPTIONS -Wfatal-errors)
-set(NODE_XDOTOOL_INCLUDE_DIRS ${CMAKE_JS_INC} $ENV{NVM_INC} ${CMAKE_CURRENT_SOURCE_DIR}/node_modules/nan ${NODE_XDOTOOL_INCLUDE_DIRS})
+set(NODE_XDOTOOL_INCLUDE_DIRS ${CMAKE_JS_INC} ${NODE_XDOTOOL_INCLUDE_DIRS})
 set(NODE_XDOTOOL_LIBRARIES xdo ${CMAKE_JS_LIB})
-
-# Check if `nan` directory exists
-if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/node_modules/nan")
-    message(FATAL_ERROR "The 'nan' module is not installed. Please run 'npm install' to install the required dependencies.")
-endif()
 
 set(NODE_XDOTOOL_SOURCE_FILES src/main.cpp
     src/xdo_c.h
