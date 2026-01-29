@@ -1,44 +1,44 @@
 {
-  "name": "xdotool",
-  "version": "2.0.0",
-  "description": "C++ bindings for Node.js to handle X11 using the full power of libxdo.",
-  "main": "./out/index.js",
-  "typings": "./out/index.d.ts",
-  "scripts": {
-    "postinstall": "npx cmake-js --prefer-clang --out build/cmake-js compile"
-  },
-  "ava": {
-    "nodeArguments": [
-      "--import=tsx"
-    ]
-  },
-  "files": [
-    "**/*.{cpp,h,c,map,js,d.ts}",
-    "**/CMakeLists.txt",
-    "!build",
-    "!cmake-build-*"
-  ],
-  "keywords": [
-    "x11",
-    "xorg",
-    "bindings"
-  ],
-  "author": {
-    "email": "victorcqueirozg@gmail.com",
-    "name": "Victor Queiroz",
-    "url": "https://victorqueiroz.dev"
-  },
-  "license": "MIT",
-  "devDependencies": {
-    "@types/node": "^20.19.30",
-    "ava": "^6.4.1",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
-  },
-  "dependencies": {
-    "bindings": "^1.5.0",
-    "cmake-js": "^8.0.0",
-    "nan": "^2.25.0",
-    "tslib": "2.2.x"
-  }
+    "name": "xdotool",
+    "version": "2.0.0",
+    "description": "C++ bindings for Node.js to handle X11 using the full power of libxdo.",
+    "main": "./out/index.js",
+    "typings": "./out/index.d.ts",
+    "scripts": {
+        "postinstall": "npx cmake-js -B Release --prefer-clang --out build/cmake-js compile"
+    },
+    "ava": {
+        "nodeArguments": [
+            "--import=tsx"
+        ]
+    },
+    "files": [
+        "**/*.{cpp,h,c,map,js,d.ts}",
+        "**/CMakeLists.txt",
+        "!build",
+        "!cmake-build-*"
+    ],
+    "keywords": [
+        "x11",
+        "xorg",
+        "bindings"
+    ],
+    "author": {
+        "email": "victorcqueirozg@gmail.com",
+        "name": "Victor Queiroz",
+        "url": "https://victorqueiroz.dev"
+    },
+    "license": "MIT",
+    "devDependencies": {
+        "@types/node": "^20.19.30",
+        "ava": "^6.4.1",
+        "tsx": "^4.21.0",
+        "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "bindings": "^1.5.0",
+        "cmake-js": "^8.0.0",
+        "nan": "^2.25.0",
+        "tslib": "2.2.x"
+    }
 }
