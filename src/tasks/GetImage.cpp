@@ -17,11 +17,6 @@ void XdoToolTask_GetImage::Execute() {
 
 Local<Value> XdoToolTask_GetImage::GetResult() {
     Nan::EscapableHandleScope scope;
-    Local<ArrayBuffer> buffer = ArrayBuffer::New(
-        Nan::GetCurrentContext()->GetIsolate(),
-        screenshooter->Data(),
-        screenshooter->ByteLength(),
-        v8::ArrayBufferCreationMode::kExternalized
-    );
-    return scope.Escape(buffer);
+    
+    return scope.Escape(screenshooter->GetArrayBuffer());
 }

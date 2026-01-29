@@ -8,7 +8,7 @@ public:
     explicit XdoTool(xdo_t* xdo);
     ~XdoTool() override;
     static void Init(v8::Local<v8::Object> exports);
-    xdo_t* GetXdo() {return xdo;}
+    [[nodiscard]] xdo_t* GetXdo() const {return xdo;}
     static Nan::Persistent<v8::Function> constructor;
 private:
     xdo_t* xdo;

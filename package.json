@@ -7,6 +7,11 @@
   "scripts": {
     "postinstall": "npx cmake-js --prefer-clang --out build/cmake-js compile"
   },
+  "ava": {
+    "nodeArguments": [
+      "--import=tsx"
+    ]
+  },
   "files": [
     "**/*.{cpp,h,c,map,js,d.ts}",
     "**/CMakeLists.txt",
@@ -25,15 +30,15 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^12.12.12",
-    "sarg": "^4.0.2",
-    "ts-node": "^8.5.2",
-    "typescript": "4.5.x"
+    "@types/node": "^20.19.30",
+    "ava": "^6.4.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "bindings": "^1.5.0",
-    "cmake-js": "6.2.x",
-    "nan": "2.14.x",
+    "cmake-js": "^8.0.0",
+    "nan": "^2.25.0",
     "tslib": "2.2.x"
   }
 }

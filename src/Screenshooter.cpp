@@ -7,26 +7,13 @@
 
 #include <X11/Xutil.h>
 
-using v8::Local;
-using v8::String;
-using v8::Object;
-using v8::ArrayBuffer;
-using v8::Function;
-using v8::FunctionTemplate;
-using Nan::SetPrototypeMethod;
-using Nan::FunctionCallback;
-using Nan::New;
-using Nan::Callback;
-using Nan::Set;
-using Nan::To;
+Nan::Persistent<v8::Function> XScreenshooter::constructor;
 
-Nan::Persistent<Function> XScreenshooter::constructor;
-
-XScreenshooter::XScreenshooter(Display* display, Window window): XService(display), window(window) {
+XScreenshooter::XScreenshooter(Display* display, const Window window): XService(display), window(window) {
     if(XGetWindowAttributes(display, window, &attributes) != X_OK) {
         throw std::runtime_error("Failed to get window attributes");
     }
-    data = (uint8_t*) malloc(attributes.width*attributes.height*3);
+    data = static_cast<uint8_t*>(malloc(attributes.width * attributes.height * 3));
     if(data == nullptr) {
         throw std::runtime_error("Memory allocation failed");
     }
@@ -34,25 +21,34 @@ XScreenshooter::XScreenshooter(Display* display, Window window): XService(displa
 }
 
 XScreenshooter::~XScreenshooter() {
-    arrayBuffer.Reset();
+    printf("Destroying\n");
+    persistentBuffer.Reset();
+
+    XDestroyImage(image);
+    image = nullptr;
 }
 
-uint32_t XScreenshooter::ByteLength() {
+uint32_t XScreenshooter::ByteLength() const {
     return attributes.width*attributes.height*3;
 }
 
-uint8_t* XScreenshooter::Data() {
+uint8_t* XScreenshooter::Data() const
+{
     return data;
 }
 
 void XScreenshooter::GetImage() {
-    image = XGetImage(display, window, attributes.x, attributes.y, attributes.width, attributes.height, AllPlanes, ZPixmap);
+    if (attributes.map_state != IsViewable)
+    {
+        throw std::runtime_error("Window map state must be viewable for screenshot taking");
+    }
+    image = XGetImage(display, window, attributes.x, attributes.y, attributes.width, attributes.height, AllPlanes, XYPixmap);
     if(!image) {
         throw std::runtime_error("Failed to get image");
     }
     uint32_t x, y;
     uint32_t offset;
-    uint32_t row_length = image->width*3;
+    uint32_t row_length = image->width * 3;
     uint64_t pixel;
     uint8_t red, blue, green;
     for(y = 0; y < image->height; y++) {
@@ -68,34 +64,35 @@ void XScreenshooter::GetImage() {
         }
     }
     XDestroyImage(image);
+    image = nullptr;
 }
 
-void XScreenshooter::Init(Local<Object> exports) {
-    std::map<std::string, FunctionCallback> methods {
+void XScreenshooter::Init(const v8::Local<v8::Object> exports) {
+    std::map<std::string, Nan::FunctionCallback> methods {
         { "constructor", Constructor },
         { "getImage", GetImage }
     };
 
-    Set(
+    Nan::Set(
         exports,
-        New<String>("Screenshooter").ToLocalChecked(),
+        Nan::New<v8::String>("Screenshooter").ToLocalChecked(),
         ClassCreator::NewClass<XScreenshooter>("Screenshooter", methods)
     );
 }
 
-Local<ArrayBuffer> XScreenshooter::GetArrayBuffer() {
-    if(!arrayBuffer.IsEmpty()) {
-        return New(arrayBuffer);
+v8::Local<v8::Object> XScreenshooter::GetArrayBuffer() {
+    if(!persistentBuffer.IsEmpty()) {
+        return Nan::New(persistentBuffer);
     }
 
-    Local<ArrayBuffer> buffer = ArrayBuffer::New(
-        Nan::GetCurrentContext()->GetIsolate(),
-        data,
-        ByteLength(),
-        v8::ArrayBufferCreationMode::kExternalized
+    const auto buffer = CreateExternalArrayBuffer(
+        reinterpret_cast<char*>(data),
+        ByteLength()
     );
-    arrayBuffer.Reset(buffer);
-    return New(arrayBuffer);
+
+    persistentBuffer.Reset(buffer);
+
+    return New(persistentBuffer);
 }
 
 NAN_METHOD(XScreenshooter::Constructor) {
@@ -104,9 +101,9 @@ NAN_METHOD(XScreenshooter::Constructor) {
         return;
     }
 
-    auto tool = Nan::ObjectWrap::Unwrap<XdoTool>(Nan::To<Object>(info[0]).ToLocalChecked());
+    const auto tool = Unwrap<XdoTool>(Nan::To<v8::Object>(info[0]).ToLocalChecked());
 
-    Window window;
+    Window window {};
     if(!TypeConverter::GetWindow(info[1],window)) {
         window = XRootWindow(tool->GetXdo()->xdpy, 0);
         if(!window) {
@@ -115,15 +112,15 @@ NAN_METHOD(XScreenshooter::Constructor) {
         }
     }
 
-    auto ss = new XScreenshooter(tool->GetXdo()->xdpy, window);
+    const auto ss = new XScreenshooter(tool->GetXdo()->xdpy, window);
     ss->Wrap(info.This());
 
     info.GetReturnValue().Set(info.This());
 }
 
 NAN_METHOD(XScreenshooter::GetImage) {
-    auto ss = Nan::ObjectWrap::Unwrap<XScreenshooter>(info.This());
-    auto task = new XdoToolTask_GetImage(ss);
-    auto* callback = new Callback(To<Function>(info[0]).ToLocalChecked());
+    const auto ss = Unwrap<XScreenshooter>(info.This());
+    const auto task = new XdoToolTask_GetImage(ss);
+    auto* callback = new Nan::Callback(Nan::To<v8::Function>(info[0]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }

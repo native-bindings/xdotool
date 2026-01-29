@@ -16,8 +16,8 @@ export default class KeyboardAsync extends AsyncWrapper {
         return this.keyboard.keysymToString(keysym);
     }
 
-    public queryKeymap(): Promise<ArrayBuffer> {
-        return new Promise<ArrayBuffer>((resolve, reject) => (
+    public queryKeymap(): Promise<Buffer> {
+        return new Promise<Buffer>((resolve, reject) => (
             this.keyboard.queryKeymap(
                 this.resolveOrReject(resolve, reject)
             )

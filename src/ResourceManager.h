@@ -1,15 +1,17 @@
 #ifndef NODE_XDOTOOL_RESOURCE_MANAGER_H_
 #define NODE_XDOTOOL_RESOURCE_MANAGER_H_
 
+#include <nan.h>
 #include <vector>
-#include <string>
 
 class ResourceManager {
 public:
     void AddResource(void* ptr);
-    ~ResourceManager();
+    virtual ~ResourceManager();
 private:
     std::vector<void*> pointers;
 };
+
+v8::Local<v8::Object> CreateExternalArrayBuffer(char* nativeData, std::uint32_t len);
 
 #endif // NODE_XDOTOOL_RESOURCE_MANAGER_H_

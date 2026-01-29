@@ -1,12 +1,9 @@
-project(node_xdotool)
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
+project(node_xdotool CXX)
 
-option(NAN_INCLUDE_DIRECTORY "NAN bindings directory" ${CMAKE_CURRENT_SOURCE_DIR}/node_modules/nan)
-option(NODE_INSTALL_DIR "Node.js path" "")
-
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 20)
 set(NODE_XDOTOOL_COMPILE_OPTIONS -Wfatal-errors)
-set(NODE_XDOTOOL_INCLUDE_DIRS ${CMAKE_JS_INC} ${NODE_INSTALL_DIR}/include/node ${NAN_INCLUDE_DIRECTORY} ${NODE_XDOTOOL_INCLUDE_DIRS})
+set(NODE_XDOTOOL_INCLUDE_DIRS ${CMAKE_JS_INC} $ENV{NVM_INC} ${CMAKE_CURRENT_SOURCE_DIR}/node_modules/nan ${NODE_XDOTOOL_INCLUDE_DIRS})
 set(NODE_XDOTOOL_LIBRARIES xdo ${CMAKE_JS_LIB})
 
 set(NODE_XDOTOOL_SOURCE_FILES src/main.cpp

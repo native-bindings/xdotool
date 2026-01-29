@@ -8,7 +8,6 @@ class XService : public Nan::ObjectWrap, public ResourceManager {
 public:
     Display* display;
     explicit XService(Display*);
-protected:
 };
 
 #endif // NODE_XDOTOOL_X_SERVICE_H_

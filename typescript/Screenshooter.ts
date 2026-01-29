@@ -7,7 +7,7 @@ import {
 } from "./xdo";
 
 export interface XScreenshooter {
-    getImage: (callback: XdoCallback<ArrayBuffer>) => void;
+    getImage: (callback: XdoCallback<Buffer>) => void;
 }
 
 export default class ScreenshooterAsync extends AsyncWrapper {
@@ -16,8 +16,8 @@ export default class ScreenshooterAsync extends AsyncWrapper {
         super();
         this.#ss = new Screenshooter(xdo, window);
     }
-    public getImage(): Promise<ArrayBuffer> {
-        return new Promise<ArrayBuffer>((resolve, reject) => (
+    public getImage(): Promise<Buffer> {
+        return new Promise<Buffer>((resolve, reject) => (
             this.#ss.getImage(
                 this.resolveOrReject(resolve, reject)
             )

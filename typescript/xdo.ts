@@ -124,7 +124,7 @@ export interface XdoTool {
 
 export interface XKeyboard {
     queryKeymap: (
-        callback: XdoCallback<ArrayBuffer>
+        callback: XdoCallback<Buffer>
     ) => void;
     keycodeToKeysym: (keycode: number) => number;
     keysymToString: (keysym: number) => string;

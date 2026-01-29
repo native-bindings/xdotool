@@ -15,8 +15,6 @@
 #include "tasks/GetFocusedWindow.h"
 #include "tasks/GetWindowSize.h"
 
-#include <iostream>
-
 using v8::FunctionTemplate;
 using v8::Function;
 using v8::String;
@@ -27,9 +25,7 @@ using v8::Value;
 using Nan::Set;
 using Nan::To;
 using Nan::GetCurrentContext;
-using Nan::Callback;
 using Nan::New;
-using Nan::FunctionCallback;
 
 Nan::Persistent<Function> XdoTool::constructor;
 
@@ -52,7 +48,7 @@ NAN_METHOD(XdoTool::GetViewportDimensions) {
         return;
     }
     auto task = new tasks::GetViewportDimensions(tool->xdo, screen);
-    auto callback = new Callback(To<Function>(info[1]).ToLocalChecked());
+    auto callback = new Nan::Callback(To<Function>(info[1]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
 
@@ -68,8 +64,8 @@ NAN_METHOD(XdoTool::GetWindowSize) {
         return;
     }
     auto task = new tasks::GetWindowSize(tool->xdo, window);
-    auto callback = new Callback(To<Function>(info[1]).ToLocalChecked());
-    AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
+    auto callback = new Nan::Callback(To<Function>(info[1]).ToLocalChecked());
+    Nan::AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
 
 NAN_METHOD(XdoTool::SendKeysequence) {
@@ -93,7 +89,7 @@ NAN_METHOD(XdoTool::SendKeysequence) {
         Nan::ThrowError("Third parameter must be a valid integer");
         return;
     }
-    auto callback = new Callback(To<Function>(info[3]).ToLocalChecked());
+    auto callback = new Nan::Callback(To<Function>(info[3]).ToLocalChecked());
     auto task = new XdoToolTask_SendKeysequence(tool->xdo, window, keySequence, delay);
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
@@ -110,7 +106,7 @@ NAN_METHOD(XdoTool::GetWindowPID) {
         return;
     }
     auto task = new XdoToolTask_GetWindowPID(tool->xdo, window);
-    auto callback = new Callback(To<Function>(info[1]).ToLocalChecked());
+    auto callback = new Nan::Callback(To<Function>(info[1]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
 
@@ -135,7 +131,7 @@ NAN_METHOD(XdoTool::MoveMouse) {
         return;
     }
     auto task = new XdoToolTask_MoveMouse(tool->xdo, x, y, screen);
-    auto callback = new Callback(To<Function>(info[1]).ToLocalChecked());
+    auto callback = new Nan::Callback(To<Function>(info[1]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
 
@@ -156,7 +152,7 @@ NAN_METHOD(XdoTool::WindowHasProperty) {
         return;
     }
     auto task = new XdoToolTask_WindowHasProperty(tool->xdo, window, property);
-    auto callback = new Callback(To<Function>(info[2]).ToLocalChecked());
+    auto callback = new Nan::Callback(To<Function>(info[2]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
 
@@ -172,7 +168,7 @@ NAN_METHOD(XdoTool::ActivateWindow) {
         return;
     }
     auto task = new tasks::ActivateWindow(tool->xdo, window);
-    auto callback = new Callback(To<Function>(info[1]).ToLocalChecked());
+    auto callback = new Nan::Callback(To<Function>(info[1]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
 
@@ -198,7 +194,7 @@ NAN_METHOD(XdoTool::EnterText) {
         return;
     }
     auto task = new XdoToolTask_EnterText(tool->xdo, window, text, delay);
-    auto callback = new Callback(To<Function>(info[3]).ToLocalChecked());
+    auto callback = new Nan::Callback(To<Function>(info[3]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback, task));
 }
 
@@ -209,12 +205,12 @@ NAN_METHOD(XdoTool::GetFocusedWindow) {
         return;
     }
     auto task = new XdoToolTask_GetFocusedWindow(tool->xdo);
-    auto callback = new Callback(To<Function>(info[0]).ToLocalChecked());
+    auto callback = new Nan::Callback(To<Function>(info[0]).ToLocalChecked());
     AsyncQueueWorker(new XdoToolTaskWorker(callback,task));
 }
 
 void XdoTool::Init(Local<Object> exports) {
-    std::map<std::string, FunctionCallback> methods {
+    std::map<std::string, Nan::FunctionCallback> methods {
         { "constructor", Constructor },
         { "getMouseLocation", GetMouseLocation },
         { "searchWindows", SearchWindows },
@@ -245,7 +241,6 @@ NAN_METHOD(XdoTool::Constructor) {
     }
 
     auto* tool = new XdoTool(xdo);
-    printf("%p\n",tool);
     tool->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
 }
@@ -256,7 +251,7 @@ NAN_METHOD(XdoTool::SearchWindows) {
         return;
     }
 
-    auto search = (xdo_search_t*) calloc(1, sizeof(xdo_search_t)*1);
+    auto search = static_cast<xdo_search_t*>(calloc(1, sizeof(xdo_search_t) * 1));
     if(search == nullptr) {
         Nan::ThrowError("Memory allocation failed");
         return;

@@ -1,14 +1,16 @@
 #include "SendKeysequence.h"
 
+#include <utility>
+
 using v8::Local;
 using v8::Value;
 
 XdoToolTask_SendKeysequence::XdoToolTask_SendKeysequence(
     xdo_t* xdo,
-    Window window,
+    const Window window,
     std::string sequence,
-    uint32_t delay
-): XdoToolTask(xdo), window(window), sequence(sequence), delay(delay) {
+    const uint32_t delay
+): XdoToolTask(xdo), window(window), sequence(std::move(sequence)), delay(delay) {
 
 }
 

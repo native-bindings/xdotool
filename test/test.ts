@@ -1,52 +1,64 @@
-import { Suite } from 'sarg';
+import timers from "node:timers";
 import {
     XdoToolAsync,
     XdoToolBindings,
     ScreenshooterAsync,
-    KeyboardAsync
-} from '../typescript';
+    KeyboardAsync,
+} from "../typescript";
+import test from "ava";
 
-const suite = new Suite();
-const {test} = suite;
+test("it should query keyboard keymap", async (t) => {
+    const xdoBindings = new XdoToolBindings();
+    const keyboard = new KeyboardAsync(xdoBindings);
 
-async function exec() {
+    const ab = await keyboard.queryKeymap();
+    t.assert(ab.byteLength === 32);
+});
+
+test("it should list windows", async (t) => {
     const xdoBindings = new XdoToolBindings();
     const xdo = new XdoToolAsync(xdoBindings);
     const windows = await xdo.searchWindows({
-        winclassname: 'Code'
+        winname: "",
     });
-    for(const w of windows) {
-        if(!(await xdo.windowHasProperty(w, '_NET_WM_DESKTOP'))) {
-            continue;
-        }
-        await xdo.activateWindow(w);
-        // console.log(require('fs').writeFileSync(__dirname + '/test.raw', buffer))
-        break;
-    }
+    t.assert(Array.isArray(windows));
+});
 
+test("it should return the same array buffer for getImage", async (t) => {
+    const xdoBindings = new XdoToolBindings();
     const ss1 = new ScreenshooterAsync(xdoBindings);
-    const ss2 = new ScreenshooterAsync(xdoBindings);
+    const firstBuffer = (await ss1.getImage()).buffer;
 
-    const keyboard = new KeyboardAsync(xdoBindings);
-    let lastArrayBuffer: ArrayBuffer | undefined;
+    t.assert(firstBuffer === (await ss1.getImage()).buffer);
+});
 
-    while(true) {
-        const buffers = await Promise.all([ss1.getImage(), ss2.getImage()]);
-        console.log(buffers);
+test("it should automatically take screenshot of the root window if no window argument is provided", async (t) => {
+    const xdoBindings = new XdoToolBindings();
+    const ss1 = new ScreenshooterAsync(xdoBindings);
 
-        const ab = await keyboard.queryKeymap();
-        console.log(ab, ab === lastArrayBuffer);
-        lastArrayBuffer = ab;
-    }
-}
-
-test('test', async () => {
-    await exec();
-    let i = 10000;
-    while(--i) {
-        console.log('.');
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+    for (let i = 0; i < 5; i++) {
+        const buffer = await ss1.getImage();
+        t.deepEqual(buffer[0], 0xff);
+        t.deepEqual(buffer[1], 0x00);
+        t.deepEqual(buffer[2], 0x00);
+        await timers.promises.setTimeout(500);
     }
 });
 
-export default suite;
+test("it should take screenshot of a specific window", async (t) => {
+    const xdoBindings = new XdoToolBindings();
+    const xdo = new XdoToolAsync(xdoBindings);
+    for (const window of await xdo.searchWindows({
+        winclass: "",
+    })) {
+        const ss1 = new ScreenshooterAsync(xdoBindings, window);
+
+        for (let i = 0; i < 5; i++) {
+            const buffer = await ss1.getImage();
+            t.deepEqual(buffer[0], 0xff);
+            t.deepEqual(buffer[1], 0x00);
+            t.deepEqual(buffer[2], 0x00);
+            await timers.promises.setTimeout(500);
+        }
+    }
+});

@@ -1,16 +1,12 @@
 #ifndef NODE_XDOTOOL_TASK_H_
 #define NODE_XDOTOOL_TASK_H_
 
-#include "ResourceManager.h"
 #include "xdo_c.h"
 #include "XTask.h"
 
-#include <iostream>
-
-struct XdoToolTask : public XTask {
-public:
-    XdoToolTask(xdo_t*);
-    xdo_t* GetXdo();
+struct XdoToolTask : XTask {
+    explicit XdoToolTask(xdo_t*);
+    [[nodiscard]] xdo_t* GetXdo() const;
 protected:
     xdo_t* xdo;
 };

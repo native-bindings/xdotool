@@ -9,12 +9,11 @@
 /**
  * Describe X11 task
  */
-struct XTask : public ResourceManager {
-public:
+struct XTask : ResourceManager {
     Display* display;
     std::string failure;
     explicit XTask(Display*);
-    virtual ~XTask() = default;
+    ~XTask() override = default;
     void SetFailure(std::string failure);
     virtual void Execute() = 0;
     virtual v8::Local<v8::Value> GetResult() = 0;

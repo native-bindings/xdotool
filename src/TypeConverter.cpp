@@ -31,11 +31,11 @@ bool TypeConverter::GetWindow(Local<Value> value,Window& out) {
     return true;
 }
 
-bool TypeConverter::GetString(Local<Value> value, std::string& out) {
+bool TypeConverter::GetString(const Local<Value> value, std::string& out) {
     if(value->IsUndefined() || !value->IsString()) {
         return false;
     }
-    auto size = Nan::DecodeBytes(value);
+    const auto size = Nan::DecodeBytes(value);
     char buffer[size];
     Nan::DecodeWrite(buffer,size,value);
     out = std::string(buffer,size);
@@ -45,14 +45,14 @@ bool TypeConverter::GetString(Local<Value> value, std::string& out) {
 /**
  * @deprecated
  */
-bool TypeConverter::GetString(Local<Value> value, char** out) {
-    if(value->IsUndefined() || !value->IsString()) {
+bool TypeConverter::GetString(const Local<Value> obj, char** out) {
+    if(obj->IsUndefined() || !obj->IsString()) {
         return false;
     }
     Isolate* isolate = Nan::GetCurrentContext()->GetIsolate();
-    Local<String> title_string = Nan::To<String>(value).ToLocalChecked();
-    int length = title_string->Utf8Length(isolate);
-    auto buffer = (char*)malloc(sizeof(char)*(length + 1));
+    const Local<String> title_string = Nan::To<String>(obj).ToLocalChecked();
+    const int length = title_string->Utf8Length(isolate);
+    const auto buffer = static_cast<char*>(malloc(sizeof(char) * (length + 1)));
     if(buffer == nullptr) {
         std::cerr << "Memory allocation failed" << std::endl;
         return false;
@@ -66,13 +66,13 @@ bool TypeConverter::GetString(Local<Value> value, char** out) {
 /**
  * @returns true if string was found and allocated, false otherwise
  */
-bool TypeConverter::GetString(Local<Object> obj, const char* prop, char** out) {
-    Local<Value> value = Nan::Get(obj, Nan::New<String>(prop).ToLocalChecked()).ToLocalChecked();
+bool TypeConverter::GetString(const Local<Object> obj, const char* prop, char** out) {
+    const Local<Value> value = Nan::Get(obj, Nan::New<String>(prop).ToLocalChecked()).ToLocalChecked();
     return GetString(value, out);
 }
 
-bool TypeConverter::GetInt32(Local<Object> obj, const char* prop, int32_t* out_n) {
-    Local<Value> value = Nan::Get(obj, Nan::New<String>(prop).ToLocalChecked()).ToLocalChecked();
+bool TypeConverter::GetInt32(const Local<Object> obj, const char* prop, int32_t* out_n) {
+    const Local<Value> value = Nan::Get(obj, Nan::New<String>(prop).ToLocalChecked()).ToLocalChecked();
     if(value->IsUndefined() || !value->IsInt32()) {
         return false;
     }
@@ -80,8 +80,8 @@ bool TypeConverter::GetInt32(Local<Object> obj, const char* prop, int32_t* out_n
     return true;
 }
 
-bool TypeConverter::GetBool(Local<Object> obj, const char* prop, bool* out_bool) {
-    Local<Value> value = Nan::Get(obj, Nan::New<String>(prop).ToLocalChecked()).ToLocalChecked();
+bool TypeConverter::GetBool(const Local<Object> obj, const char* prop, bool* out_bool) {
+    const Local<Value> value = Nan::Get(obj, Nan::New<String>(prop).ToLocalChecked()).ToLocalChecked();
     if(value->IsUndefined() || !value->IsBoolean()) {
         return false;
     }
@@ -89,27 +89,27 @@ bool TypeConverter::GetBool(Local<Object> obj, const char* prop, bool* out_bool)
     return true;
 }
 
-bool TypeConverter::GetWindow(Local<Object> obj, const char* prop, Window* window) {
-    Local<Value> window_str = Nan::Get(obj, New<String>(prop).ToLocalChecked()).ToLocalChecked();
+bool TypeConverter::GetWindow(const Local<Object> obj, const char* prop, Window* window) {
+    const Local<Value> window_str = Nan::Get(obj, New<String>(prop).ToLocalChecked()).ToLocalChecked();
     return GetWindow(window_str,*window);
 }
 
-bool TypeConverter::GetInt32(Local<Value> val, int32_t& out) {
+bool TypeConverter::GetInt32(const Local<Value> val, int32_t& out) {
     if(!val->IsInt32()) return false;
     out = To<Int32>(val).ToLocalChecked()->Value();
     return true;
 }
 
-bool TypeConverter::GetUint32(Local<Value> val, uint32_t& out) {
+bool TypeConverter::GetUint32(const Local<Value> val, uint32_t& out) {
     if(!val->IsUint32()) return false;
     out = To<Uint32>(val).ToLocalChecked()->Value();
     return true;
 }
 
-bool TypeConverter::GetDouble(v8::Local<v8::Value> val, double& out) {
+bool TypeConverter::GetDouble(const Local<Value> val, double& out) {
     if(!val->IsNumber()) {
         return false;
     }
-    out = Nan::To<v8::Number>(val).ToLocalChecked()->Value();
+    out = Nan::To<Number>(val).ToLocalChecked()->Value();
     return true;
 }
