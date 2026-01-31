@@ -5,3 +5,6 @@
 /out
 /.history
 /yarn-error.log
+
+# Valgrind result logs
+/valgrind/results_*.log

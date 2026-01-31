@@ -1,0 +1,182 @@
+# Valgrind suppression file for Node.js / V8
+# These suppressions filter out known false positives from V8's memory allocator
+# and Node.js internals that are not actual memory leaks.
+
+# V8 Isolate and heap management
+{
+   v8_isolate_new
+   Memcheck:Leak
+   ...
+   fun:*v8*Isolate*New*
+}
+
+{
+   v8_isolate_allocate
+   Memcheck:Leak
+   ...
+   fun:*v8*internal*Isolate*
+}
+
+{
+   v8_heap_setup
+   Memcheck:Leak
+   ...
+   fun:*v8*internal*Heap*Setup*
+}
+
+{
+   v8_heap_allocate
+   Memcheck:Leak
+   ...
+   fun:*v8*internal*Heap*Allocate*
+}
+
+# V8 platform and thread management
+{
+   v8_platform_new
+   Memcheck:Leak
+   ...
+   fun:*v8*platform*
+}
+
+{
+   v8_thread_local
+   Memcheck:Leak
+   ...
+   fun:*v8*base*Thread*
+}
+
+# Node.js event loop (libuv)
+{
+   libuv_loop_init
+   Memcheck:Leak
+   ...
+   fun:uv_loop_init
+}
+
+{
+   libuv_async
+   Memcheck:Leak
+   ...
+   fun:uv_async_*
+}
+
+{
+   libuv_thread_pool
+   Memcheck:Leak
+   ...
+   fun:uv__work_submit
+}
+
+# Node.js module loading
+{
+   node_module_load
+   Memcheck:Leak
+   ...
+   fun:*node*binding*
+}
+
+{
+   node_environment
+   Memcheck:Leak
+   ...
+   fun:*node*Environment*
+}
+
+# NAN (Native Abstractions for Node.js)
+{
+   nan_persistent
+   Memcheck:Leak
+   ...
+   fun:*Nan*Persistent*
+}
+
+{
+   nan_escapable_handle_scope
+   Memcheck:Leak
+   ...
+   fun:*Nan*EscapableHandleScope*
+}
+
+# OpenSSL (used by Node.js)
+{
+   openssl_init
+   Memcheck:Leak
+   ...
+   fun:OPENSSL_init_*
+}
+
+{
+   openssl_crypto
+   Memcheck:Leak
+   ...
+   fun:CRYPTO_*
+}
+
+# ICU (internationalization)
+{
+   icu_init
+   Memcheck:Leak
+   ...
+   fun:*icu*
+}
+
+# pthread / glibc
+{
+   pthread_create
+   Memcheck:Leak
+   ...
+   fun:pthread_create*
+}
+
+{
+   dlopen_leak
+   Memcheck:Leak
+   ...
+   fun:_dl_*
+}
+
+{
+   glibc_dlopen
+   Memcheck:Leak
+   ...
+   fun:dlopen*
+}
+
+# X11 libraries (for xdotool)
+{
+   x11_open_display
+   Memcheck:Leak
+   ...
+   fun:XOpenDisplay
+}
+
+{
+   x11_intern_atom
+   Memcheck:Leak
+   ...
+   fun:XInternAtom*
+}
+
+{
+   xdo_new
+   Memcheck:Leak
+   ...
+   fun:xdo_new
+}
+
+# Conditional jumps in V8 JIT code (expected)
+{
+   v8_jit_code
+   Memcheck:Cond
+   ...
+   obj:*
+}
+
+# Uninitialized values in V8 (JIT compiled code)
+{
+   v8_uninitialized
+   Memcheck:Value8
+   ...
+   fun:*v8*internal*
+}

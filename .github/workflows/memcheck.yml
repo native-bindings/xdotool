@@ -1,0 +1,166 @@
+name: Memory Check
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      iterations:
+        description: 'Number of iterations per test'
+        required: false
+        default: '50'
+
+jobs:
+  valgrind:
+    name: Valgrind Memory Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            valgrind \
+            libxdo-dev \
+            libx11-dev \
+            xvfb \
+            x11-xserver-utils
+
+      - name: Install npm dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build native module
+        run: npm run install
+
+      - name: Build TypeScript
+        run: npx tsc || true
+
+      - name: Run Valgrind memory check
+        env:
+          DISPLAY: ':99'
+          MEMCHECK_ITERATIONS: ${{ github.event.inputs.iterations || '50' }}
+          MEMCHECK_VERBOSE: '1'
+        run: |
+          # Start Xvfb for X11 display
+          Xvfb :99 -screen 0 1024x768x24 &
+          sleep 2
+
+          # Run valgrind
+          valgrind \
+            --leak-check=full \
+            --show-leak-kinds=definite,possible \
+            --errors-for-leak-kinds=definite \
+            --error-exitcode=1 \
+            --suppressions=valgrind/node.supp \
+            node --expose-gc valgrind/memcheck.js
+
+      - name: Upload Valgrind results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: valgrind-results
+          path: valgrind/results_*.log
+          retention-days: 30
+          if-no-files-found: ignore
+
+  asan:
+    name: AddressSanitizer Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxdo-dev \
+            libx11-dev \
+            xvfb \
+            x11-xserver-utils \
+            clang
+
+      - name: Install npm dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build with AddressSanitizer
+        env:
+          CC: clang
+          CXX: clang++
+        run: |
+          npx cmake-js -B Debug --prefer-clang --out build/cmake-js compile \
+            --CDCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g" \
+            --CDCMAKE_C_FLAGS="-fsanitize=address -fno-omit-frame-pointer -g"
+
+      - name: Build TypeScript
+        run: npx tsc || true
+
+      - name: Run tests with ASan
+        env:
+          DISPLAY: ':99'
+          ASAN_OPTIONS: 'detect_leaks=1:halt_on_error=1'
+          MEMCHECK_ITERATIONS: '20'
+        run: |
+          # Start Xvfb
+          Xvfb :99 -screen 0 1024x768x24 &
+          sleep 2
+
+          # Run memory check
+          node --expose-gc valgrind/memcheck.js
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libxdo-dev \
+            libx11-dev \
+            xvfb
+
+      - name: Install npm dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build native module
+        run: npm run install
+
+      - name: Build TypeScript
+        run: npx tsc || true
+
+      - name: Run tests
+        env:
+          DISPLAY: ':99'
+        run: |
+          Xvfb :99 -screen 0 1024x768x24 &
+          sleep 2
+          npm test

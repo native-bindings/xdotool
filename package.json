@@ -5,7 +5,15 @@
     "main": "./out/index.js",
     "typings": "./out/index.d.ts",
     "scripts": {
-        "install": "cmake-js -B Release --prefer-clang --out build/cmake-js compile"
+        "install": "cmake-js -B Release --prefer-clang --out build/cmake-js compile",
+        "build:debug": "cmake-js -B Debug --prefer-clang --out build/cmake-js-debug compile",
+        "build:asan": "cmake-js -B Debug --prefer-clang --out build/cmake-js-asan compile --CDCMAKE_CXX_FLAGS='-fsanitize=address -fno-omit-frame-pointer'",
+        "test": "ava",
+        "memcheck": "node --expose-gc valgrind/memcheck.js",
+        "memcheck:quick": "MEMCHECK_ITERATIONS=10 MEMCHECK_VERBOSE=1 node --expose-gc valgrind/memcheck.js",
+        "valgrind": "bash valgrind/run-valgrind.sh",
+        "valgrind:quick": "bash valgrind/run-valgrind.sh --quick --verbose",
+        "valgrind:full": "bash valgrind/run-valgrind.sh --full --track-origins"
     },
     "ava": {
         "nodeArguments": [
